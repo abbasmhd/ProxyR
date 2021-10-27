@@ -18,67 +18,6 @@ namespace ProxyR.Abstractions.Execution
     public static class Db
     {
         /// <summary>
-        ///     Inserts all the rows from a data-table into a target database table.
-        /// </summary>
-        /// <param name="connectionString">The connection-string to the database.</param>
-        /// <param name="sourceTable">The table containing the source records to insert.</param>
-        /// <param name="tableName">The name of the table to insert the records into.</param>
-        public static async Task BulkCopyAsync(string connectionString, DataTable sourceTable, string tableName)
-        {
-            using (var connection = CreateConnection(connectionString))
-            {
-                await connection.OpenAsync();
-                await BulkCopyAsync((SqlConnection)connection, sourceTable, tableName);
-            }
-        }
-
-        /// <summary>
-        ///     Inserts all the rows from a data-table into a target database table.
-        /// </summary>
-        /// <param name="connection">The connection to the database where the records are to be inserted.</param>
-        /// <param name="sourceTable">The table containing the source records to insert.</param>
-        /// <param name="tableName">The name of the table to insert the records into.</param>
-        /// <param name="transaction">The optional transaction to encapsulate the inserts into.</param>
-        public static async Task BulkCopyAsync(SqlConnection connection, DataTable sourceTable, string tableName, SqlTransaction transaction = null)
-        {
-            using (var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction))
-            {
-
-                // Set the target table name.
-                bulkCopy.BulkCopyTimeout = 28800;
-                bulkCopy.DestinationTableName = tableName;
-
-                // Get the columns.
-                var table = await DbCommands.GetColumns(connection, tableName)
-                    .ToDataTableAsync(closeConnection: false, transaction: transaction);
-
-                var columns = table.Rows
-                    .Cast<DataRow>()
-                    .Select(row => (string)row["COLUMN_NAME"])
-                    .ToArray();
-
-                // Add the mappings, assuming the source and destination column names are the same.
-                foreach (DataColumn column in sourceTable.Columns)
-                {
-                    // Find the target column, so we can get the correct casing.
-                    var targetColumnName = columns.FirstOrDefault(c => c.Equals(column.ColumnName, StringComparison.OrdinalIgnoreCase));
-
-                    if (targetColumnName == null)
-                    {
-                        continue;
-                    }
-
-                    // Map the source-cased column to the target cased column.
-                    bulkCopy.ColumnMappings.Add(column.ColumnName, targetColumnName);
-                }
-
-                // Write the table to the server.
-                await bulkCopy.WriteToServerAsync(sourceTable);
-
-            }
-        }
-
-        /// <summary>
         ///     Creates an SQL query using an already created connection.
         ///     The query will not actually be executed, but will be deferred for the caller to execute the query.
         /// </summary>
@@ -229,7 +168,5 @@ namespace ProxyR.Abstractions.Execution
 
             return command;
         }
-
     }
-
 }

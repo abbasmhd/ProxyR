@@ -44,7 +44,8 @@ namespace ProxyR.Abstractions.Builder
 
         public static string ParenthesisLines(params string[] contents) => string.Join("\n, ", contents.Select(r => $"({r})"));
 
-        public static string Values(IEnumerable<object> values) => string.Join(", ", values.Select(Quote));
+        //public static string Values(IEnumerable<object> values) => string.Join(", ", values.Select(Quote));
+        public static string Values(IEnumerable<object> values) => string.Join(", ", values.SelectQuoted());
 
         public static string Values(params object[] values) => Values((IEnumerable<object>)values);
 
@@ -83,6 +84,14 @@ namespace ProxyR.Abstractions.Builder
                     defaultPart)
                 .Trim();
             return result;
+        }
+
+        public static IEnumerable<string> SelectQuoted(this IEnumerable<object> values)
+        {
+            foreach (var value in values)
+            {
+                yield return Quote(value);
+            }
         }
 
         public static string Quote(object value)
