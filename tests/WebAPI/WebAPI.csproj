@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\ProxyR.Middleware\ProxyR.Middleware.csproj" />
+    <ProjectReference Include="..\..\src\ProxyR.Middleware\ProxyR.Middleware.csproj" />
   </ItemGroup>
 
 </Project>
