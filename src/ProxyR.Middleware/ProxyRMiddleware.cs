@@ -293,11 +293,9 @@ namespace ProxyR.Middleware
             {
                 case "allpages":
                     queryParams.RequireTotalCount = true;
-
                     break;
                 case "none":
                     queryParams.RequireTotalCount = false;
-
                     break;
                 default:
                     throw new NotSupportedException($"Value for $inlinecount={queryStringInlineCount} is not supported");
@@ -321,7 +319,6 @@ namespace ProxyR.Middleware
                     expression.Add(subExpression);
                     expressionStack.Push(subExpression);
                     filterText = filterText.Remove(0, 1);
-
                     continue;
                 }
 
@@ -329,7 +326,6 @@ namespace ProxyR.Middleware
                 {
                     filterText = filterText.Remove(0, 1);
                     expressionStack.Pop();
-
                     continue;
                 }
 
@@ -343,7 +339,7 @@ namespace ProxyR.Middleware
                     continue;
                 }
 
-                var conditionalOperatorRegexValue = Regex.Match(filterText, "^(eq|ne|gt|ge|lt|le)[^a-z0-9]", RegexOptions.IgnoreCase);
+                var conditionalOperatorRegexValue = Regex.Match(filterText, "^(eq|ne|gt|ge|lt|le|contains|notcontains|startswith|endswith)[^a-z0-9]", RegexOptions.IgnoreCase);
 
                 if (conditionalOperatorRegexValue.Success && expression.Count == 1)
                 {
@@ -355,32 +351,37 @@ namespace ProxyR.Middleware
                     {
                         case "eq":
                             expressionOperator = "=";
-
                             break;
                         case "ne":
                             expressionOperator = "<>";
-
                             break;
                         case "gt":
                             expressionOperator = ">";
-
                             break;
                         case "ge":
                             expressionOperator = ">=";
-
                             break;
                         case "lt":
                             expressionOperator = "<";
-
                             break;
                         case "le":
                             expressionOperator = "<=";
-
+                            break;
+                        case "contains":
+                            expressionOperator = "contains";
+                            break;
+                        case "notcontains":
+                            expressionOperator = "notcontains";
+                            break;
+                        case "startswith":
+                            expressionOperator = "startswith";
+                            break;
+                        case "endswith":
+                            expressionOperator = "endswith";
                             break;
                     }
 
                     expression.Add(expressionOperator);
-
                     continue;
                 }
 
@@ -390,7 +391,6 @@ namespace ProxyR.Middleware
                 {
                     filterText = filterText.Remove(0, logicalOperatorRegexValue.Groups[1].Length);
                     expression.Add(logicalOperatorRegexValue.Groups[1].Value.ToLowerInvariant());
-
                     continue;
                 }
 
@@ -400,7 +400,6 @@ namespace ProxyR.Middleware
                 {
                     filterText = filterText.Remove(0, stringLiteralRegexValue.Groups[1].Length + 2);
                     expression.Add(stringLiteralRegexValue.Groups[1].Value);
-
                     continue;
                 }
 
@@ -410,12 +409,10 @@ namespace ProxyR.Middleware
                 {
                     filterText = filterText.Remove(0, decimalLiteralRegexValue.Groups[1].Length);
                     expression.Add(decimalLiteralRegexValue.Groups[1].Value);
-
                     continue;
                 }
 
                 var unknownText = filterText.Substring(0, Math.Min(10, filterText.Length));
-
                 throw new InvalidOperationException($"Filter expression contained \"{unknownText}\" which was not expected.");
             }
 
@@ -431,9 +428,7 @@ namespace ProxyR.Middleware
                                   string functionSchema, string functionName, string[] functionArguments)
         {
             unit.Comment("Queries and outputs the results.", "Optionally including, paging, sorting, filtering and grouping.");
-
             BuildSelectStatement(unit, paramBuilder, requestParams, functionSchema, functionName, functionArguments);
-
             if (requestParams.RequireTotalCount)
             {
                 unit.Comment("Calculates the total row count.", "Optionally including filtering, but no paging or sorting.");
@@ -603,6 +598,11 @@ namespace ProxyR.Middleware
 
         private void BuildWhereExpression(SqlBuilder targetExpression, JArray sourceExpression, ParameterBuilder paramBuilder, bool includeBrackets = true)
         {
+            if(sourceExpression.Count < 2)
+            {
+                return; // Bail out.
+            }
+
             var left = sourceExpression[0];
             var firstOperation = sourceExpression[1]?.ToString()?.ToLower();
 

@@ -18,9 +18,9 @@ namespace ProxyR.Abstractions.Builder
         /// </summary>
         public static string Sanitize(string identifier) => Regex.Replace(identifier.Trim(), "[^A-Za-z0-9_]", "_");
 
-        public static string ColumnReferences(params string[] names) => string.Join(", ", names.Select(name => $"[{name}]"));
+        public static string ColumnReferences(params string[] names) => String.Join(", ", names.Select(name => $"[{name}]"));
 
-        public static string ColumnLines(params string[] names) => string.Join("\n, ", names.Select(name => $"[{name}]"));
+        public static string ColumnLines(params string[] names) => String.Join("\n, ", names.Select(name => $"[{name}]"));
 
         public static string[] SplitIdentifierParts(string chainOfParts) => chainOfParts.Split('.').Select(ids => ids.Trim('[', ']')).ToArray();
 
@@ -42,41 +42,41 @@ namespace ProxyR.Abstractions.Builder
 
         public static object[] GetPropertyValues(object obj, IEnumerable<PropertyInfo> properties) => properties.Select(p => p.GetValue(obj)).ToArray();
 
-        public static string ParenthesisLines(params string[] contents) => string.Join("\n, ", contents.Select(r => $"({r})"));
+        public static string ParenthesisLines(params string[] contents) => String.Join("\n, ", contents.Select(r => $"({r})"));
 
         //public static string Values(IEnumerable<object> values) => string.Join(", ", values.Select(Quote));
-        public static string Values(IEnumerable<object> values) => string.Join(", ", values.SelectQuoted());
+        public static string Values(IEnumerable<object> values) => String.Join(", ", values.SelectQuoted());
 
         public static string Values(params object[] values) => Values((IEnumerable<object>)values);
 
-        public static string CommaLines(params string[] lines) => string.Join("\n, ", lines);
+        public static string CommaLines(params string[] lines) => String.Join("\n, ", lines);
 
         public static string ColumnDefinition(string columnName, string type, bool? isNullable = null, string defaultExpression = null, int columnNamePadding = 0, bool doPadding = false, string collation = null)
         {
             var columnPart = $"[{columnName}]".PadRight(doPadding ? columnNamePadding : 0);
 
-            var collationPart = string.Empty;
+            var collationPart = String.Empty;
 
             if (type.IndexOf("char", StringComparison.InvariantCultureIgnoreCase) > -1)
             {
                 collationPart = $"COLLATE {collation ?? "DATABASE_DEFAULT"}";
             }
 
-            var nullablePart = string.Empty;
+            var nullablePart = String.Empty;
 
             if (isNullable != null)
             {
                 nullablePart = isNullable == true ? "NULL" : "NOT NULL";
             }
 
-            var defaultPart = string.Empty;
+            var defaultPart = String.Empty;
 
             if (defaultExpression != null)
             {
                 defaultPart = $"= {defaultExpression}";
             }
 
-            var result = string.Join(" ",
+            var result = String.Join(" ",
                     columnPart,
                     type.PadRight(doPadding ? 16 : 0),
                     collationPart.PadRight(doPadding ? 20 : 0),

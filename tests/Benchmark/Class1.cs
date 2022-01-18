@@ -12,11 +12,11 @@ namespace Benchmark
     [RankColumn()]
     [MemoryDiagnoser]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-    public class ClassBanchmark
+    public class ClassBenchmark
     {
 
         [Benchmark(Baseline = true)]
-        public void Benchmark1()
+        public static void Benchmark1()
         {
 
         }
@@ -24,7 +24,7 @@ namespace Benchmark
 
         [Benchmark]
 
-        public void Benchmark2()
+        public static void Benchmark2()
         {
 
         }

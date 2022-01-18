@@ -16,9 +16,9 @@ namespace ProxyR.Middleware
         public ProxyRRuntimeOptions RuntimeOptions { get; } = new ProxyRRuntimeOptions();
 
         /// <summary>
-        ///     Copies the options from a configuration section.
+        ///     Bind the options from a configuration section.
         /// </summary>
-        public ProxyROptionsBuilder CopyFrom(IConfigurationSection section)
+        public ProxyROptionsBuilder BindConfiguration(IConfigurationSection section)
         {
             section.Bind(Options);
 

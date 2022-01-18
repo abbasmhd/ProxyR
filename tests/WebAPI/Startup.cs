@@ -29,12 +29,12 @@ namespace WebAPI
         {
 
             // Adds the configuration for the database functions queries.
-            services.AddProxyR(options => options.CopyFrom(Configuration.GetSection("ProxyR"))
+            services.AddProxyR(options => options.BindConfiguration(Configuration.GetSection("ProxyR"))
                                                  .UseConnectionString(_connectionString));
 
             // services.AddRazorPages();
 
-            services.AddControllers();
+            //services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,17 +54,20 @@ namespace WebAPI
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseRouting();
+            //app.UseRouting();
 
-            app.UseAuthorization();
+            //app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => {
-                endpoints.MapControllers();
-            });
+            //app.UseEndpoints(endpoints => {
+            //    endpoints.MapControllers();
+            //});
 
-            // Lookout for calls for DB functions.
+            // Lookout for calls for ProxyR.
             //app.UseWhen(c => c.User.Identity?.IsAuthenticated != true,
             //            authenticated => app.UseProxyR());
+
+            //app.UseProxyR(options => options.BindConfiguration(Configuration.GetSection("ProxyR"))
+            //                                     .UseConnectionString(_connectionString));
 
             app.UseProxyR();
             // start url

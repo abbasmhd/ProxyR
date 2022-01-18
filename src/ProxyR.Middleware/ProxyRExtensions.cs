@@ -40,12 +40,12 @@ namespace ProxyR.Middleware
         }
 
         /// <summary>
-        ///     Adds the database function calls to the HTTP pipeline.
+        ///     Adds ProxyR calls to the HTTP pipeline.
         /// </summary>
         public static IApplicationBuilder UseProxyR(this IApplicationBuilder builder) => builder.UseMiddleware<ProxyRMiddleware>();
 
         /// <summary>
-        ///     Adds the database function calls to the HTTP pipeline.
+        ///     Adds ProxyR calls to the HTTP pipeline.
         /// </summary>
         public static IApplicationBuilder UseProxyR(this IApplicationBuilder builder, Action<ProxyROptionsBuilder> builderFunc)
         {

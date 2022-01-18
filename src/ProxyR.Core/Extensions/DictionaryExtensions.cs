@@ -6,11 +6,8 @@ namespace ProxyR.Core.Extensions
 {
     public static class DictionaryExtensions
     {
-        public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
-            => dictionary != null && dictionary.TryGetValue(key, out var value) ? value : default;
-
-        public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue)
-            => dictionary == null ? default : dictionary.TryGetValue(key, out var value) ? value : defaultValue;
+        public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue = default)
+            => dictionary != null && dictionary.TryGetValue(key, out var value) ? value : defaultValue;
 
         public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key) where TValue : new()
         {
@@ -19,7 +16,7 @@ namespace ProxyR.Core.Extensions
                 return value;
             }
             value = new TValue();
-            dictionary.Add(key, value);
+            dictionary.TryAdd(key, value);
             return value;
         }
 
@@ -30,7 +27,7 @@ namespace ProxyR.Core.Extensions
                 return value;
             }
             value = createFunc();
-            dictionary.Add(key, value);
+            dictionary.TryAdd(key, value);
             return value;
         }
 

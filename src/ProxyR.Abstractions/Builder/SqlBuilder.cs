@@ -43,21 +43,27 @@ namespace ProxyR.Abstractions.Builder
             return this;
         }
 
-        public SqlBuilder TryCatch(Action<SqlBuilder> tryBlock, Action<SqlBuilder> catchBlock)
+        public SqlBuilder TryBlock(Action<SqlBuilder> tryBlock)
         {
             if (tryBlock == null)
             {
                 throw new ArgumentNullException(nameof(tryBlock));
             }
 
+            Line("BEGIN TRY");
+            Indent(tryBlock);
+            Line("END TRY");
+
+            return this;
+        }
+
+        public SqlBuilder CatchBlock(Action<SqlBuilder> catchBlock)
+        {
             if (catchBlock == null)
             {
                 throw new ArgumentNullException(nameof(catchBlock));
             }
 
-            Line("BEGIN TRY");
-            Indent(tryBlock);
-            Line("END TRY");
             Line("BEGIN CATCH");
             Indent(catchBlock);
             Line("END CATCH");
@@ -193,18 +199,17 @@ namespace ProxyR.Abstractions.Builder
 
             Line("BEGIN TRANSACTION");
 
-            TryCatch(
-                tryBlock =>
-                {
-                    transactionBlock(tryBlock);
-                    tryBlock.Line();
-                    tryBlock.Line("COMMIT TRANSACTION");
-                },
-                catchBlock =>
-                {
-                    // TODO: Do we need to report error?
-                    catchBlock.Line("ROLLBACK TRANSACTION");
-                });
+            TryBlock(tryBlock =>
+            {
+                transactionBlock(tryBlock);
+                tryBlock.Line();
+                tryBlock.Line("COMMIT TRANSACTION");
+            })
+            .CatchBlock(catchBlock =>
+            {
+                // TODO: Do we need to report error?
+                catchBlock.Line("ROLLBACK TRANSACTION");
+            });
 
             return this;
         }
