@@ -32,6 +32,7 @@ namespace ProxyR.Abstractions.Extensions
 
             // Setup all the columns.
             foreach (var property in properties)
+            {
                 if (!table.Columns.Contains(property.Name))
                 {
                     var column = table.Columns.Add(property.Name, property.PropertyType.GetNullableUnderlyingType());
@@ -55,6 +56,7 @@ namespace ProxyR.Abstractions.Extensions
                         primaryKey.Add(column);
                     }
                 }
+            }
 
             // Setup the primary-key.
             if (primaryKey.Any())
@@ -172,7 +174,7 @@ namespace ProxyR.Abstractions.Extensions
         /// <summary>
         /// Converts the current entry in the DataReader to an entity.
         /// </summary>
-        public static TEntity ToEntity<TEntity>(this IDataReader dataReader, DbEntityMap map = null)            where TEntity : class, new()
+        public static TEntity ToEntity<TEntity>(this IDataReader dataReader, DbEntityMap map = null) where TEntity : class, new()
         {
             if (map == null)
             {
@@ -200,7 +202,7 @@ namespace ProxyR.Abstractions.Extensions
             return entity;
         }
 
-        public static IEnumerable<TEntity> ToEntity<TEntity>(this DataTable table, DbEntityMap map = null)            where TEntity : class, new()
+        public static IEnumerable<TEntity> ToEntity<TEntity>(this DataTable table, DbEntityMap map = null) where TEntity : class, new()
         {
             if (map == null)
             {

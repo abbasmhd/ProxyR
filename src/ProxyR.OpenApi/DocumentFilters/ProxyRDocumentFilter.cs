@@ -1,5 +1,4 @@
-﻿using Microsoft.OpenApi.Interfaces;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 using ProxyR.Abstractions;
 using ProxyR.Abstractions.Builder;
 using ProxyR.Abstractions.Commands;
@@ -17,13 +16,15 @@ namespace ProxyR.OpenAPI.DocumentFilters
         {
             public string Name { get; set; }
             public string Type { get; set; }
+            public int? MaxLength { get; set; }
         }
 
         class ProxyRColumn
         {
             public string Name { get; set; }
-
             public string Type { get; set; }
+            public int? MaxLength { get; set; }
+
         }
 
         public ProxyRDocumentFilter(ProxyROptions options, string? connectionString = default)
@@ -38,7 +39,6 @@ namespace ProxyR.OpenAPI.DocumentFilters
 
         public void Apply(OpenApiDocument openApiDocument, DocumentFilterContext context)
         {
-
             // Tags are for group the operations
             var openApiTags = new List<OpenApiTag> {
                 new OpenApiTag {
@@ -64,11 +64,17 @@ namespace ProxyR.OpenAPI.DocumentFilters
             {
                 var parameterQuery = Db.Query(
                     options.ConnectionString,
-                    $"SELECT [Name] = name, [Type] = TYPE_NAME(user_type_id), [MaxLength] = max_length  FROM SYS.PARAMETERS WHERE OBJECT_ID = OBJECT_ID('[{Sql.Sanitize(schemaName)}].[{Sql.Sanitize(functionName)}]') ORDER BY PARAMETER_ID");
+                    @$"SELECT [Name] = name, [Type] = TYPE_NAME(user_type_id), [MaxLength] = max_length
+                         FROM SYS.PARAMETERS
+                        WHERE OBJECT_ID = OBJECT_ID('[{Sql.Sanitize(schemaName)}].[{Sql.Sanitize(functionName)}]')
+                        ORDER BY PARAMETER_ID");
 
                 var columnQuery = Db.Query(
                     options.ConnectionString,
-                    $"SELECT [Name] = name, [Type] = TYPE_NAME(user_type_id) FROM sys.columns WHERE object_id = OBJECT_ID('[{Sql.Sanitize(schemaName)}].[{Sql.Sanitize(functionName)}]') ORDER BY column_id");
+                    @$"SELECT [Name] = name, [Type] = TYPE_NAME(user_type_id), [MaxLength] = max_length
+                         FROM sys.columns
+                        WHERE object_id = OBJECT_ID('[{Sql.Sanitize(schemaName)}].[{Sql.Sanitize(functionName)}]')
+                        ORDER BY column_id");
 
                 var pathPart = functionName.Remove(0, prefix.Length);
                 pathPart = pathPart.Remove(prefix.Length - suffix.Length, suffix.Length);
@@ -78,89 +84,123 @@ namespace ProxyR.OpenAPI.DocumentFilters
                 // ProxyR endpoinmt Path/URI.
                 var pathName = pathPart.Replace('_', '/').Trim('/').ToLowerInvariant();
 
-                var dbParameters = parameterQuery.ToArray<ProxyRColumn>();
-                var dbProperties = columnQuery.ToArray<ProxyRParameter>();
+                var dbParameters = parameterQuery.ToArray<ProxyRParameter>();
 
                 var pathParameters = dbParameters
                     .Where(x => !excludedParameters.Contains(x.Name.TrimStart('@'), StringComparer.InvariantCultureIgnoreCase))
                     .Select(x => new OpenApiParameter
                     {
+
                         Name = x.Name.TrimStart('@').ToCamelCase(),
                         In = ParameterLocation.Query,
-                        Required = true
+                        //Required = true // TODO check is_nullable
+                        Schema = new OpenApiSchema()
+                        {
+                            Type = DbTypes.ToJsType(x.Type),
+                            Title = x.Name.TrimStart('@').ToCamelCase(),
+                            Description = "Description " + x.Name.TrimStart('@').ToCamelCase(),
+                            MaxLength = x.MaxLength
+                        }
                     })
-                    //.Cast<IOpenApiElement>()
                     .ToList();
 
-                var resultName = $"{pathPart.ToPascalCase()}Result";
+                var dbProperties = columnQuery.ToArray<ProxyRColumn>();
 
-                //var resultSchema = new Schema
-                //{
-                //    Properties = new Dictionary<string, Schema>
-                //    {
-                //        ["results"] = new Schema
-                //        {
-                //            Type = "array",
-                //            Items = new Schema
-                //            {
-                //                Properties = dbProperties
-                //                    .Select(x => (
-                //                        Name: x.Name.ToCamelCase(),
-                //                        Schema: new Schema
-                //                        {
-                //                            Type = DbTypes.ToJsType(x.Type)
-                //                        }))
-                //                    .ToDictionary(
-                //                        keySelector: x => x.Name,
-                //                        elementSelector: x => x.Schema,
-                //                        comparer: StringComparer.InvariantCultureIgnoreCase)
-                //            }
-                //        }
-                //    }
-                //};
-
-                var pathItem = new OpenApiPathItem();
-
-                pathItem.Operations = new Dictionary<OperationType, OpenApiOperation>();
-
-
-
-                var openApiOperation = new OpenApiOperation
+                openApiDocument.Components.Schemas.Add($"{pathPart}_model", new OpenApiSchema
                 {
-                    Tags = new List<OpenApiTag>() { new OpenApiTag() { Name = firstSegment } },
-                    OperationId = functionName,
-                    //Consumes = null,
-                    //Produces = new[] { "application/json" },
-                    Parameters = pathParameters,
-                    Responses = new OpenApiResponses() {
-                        {"200", new OpenApiResponse()
+                    Type = "object",
+                    Properties = dbProperties.Select(x =>
+                            (Name: x.Name.ToCamelCase(),
+                            Schema: new OpenApiSchema()
                             {
-                                Description = "Success",
-                                Content = new Dictionary<string, OpenApiMediaType>()
+                                Type = DbTypes.ToJsType(x.Type),
+                                Title = x.Name.TrimStart('@').ToCamelCase(),
+                                MaxLength = x.MaxLength
+                            })
+                        )
+                        .ToDictionary(
+                            keySelector: x => x.Name,
+                            elementSelector: x => x.Schema,
+                            comparer: StringComparer.InvariantCultureIgnoreCase)
+                });
+
+                openApiDocument.Components.Schemas.Add($"{pathPart}_array", new OpenApiSchema
+                {
+                    Type = "array",
+                    Items = new OpenApiSchema
+                    {
+                        Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = $"{pathPart}_model" }
+                    }
+                });
+
+                var responseSchema = new OpenApiResponse()
+                {
+                    Description = "Success",
+                    Content = new Dictionary<string, OpenApiMediaType>()
+                    {
+                        {"application/json", new OpenApiMediaType()
+                            {
+                                Schema = new OpenApiSchema()
                                 {
-                                    {"application/json", new OpenApiMediaType()
-                                        {
-                                            Schema = new OpenApiSchema
+                                    Type = "object",
+                                    Properties = new Dictionary<string, OpenApiSchema>()
+                                    {
+                                        { "Results", 
+                                            new OpenApiSchema()
                                             {
-                                                Reference = new OpenApiReference()
-                                                {
-                                                    Type = ReferenceType.Schema,
-                                                    Id = $"definitions/{resultName}"
-                                                }
-                                            }
+                                                Reference = new OpenApiReference
+                                                { 
+                                                    Type = ReferenceType.Schema, 
+                                                    Id = $"{pathPart}_array"
+                                                } 
+                                            } 
                                         }
                                     }
                                 }
+                                //Schema = new OpenApiSchema
+                                //{
+                                //    Type = "object",
+                                //    Properties = dbProperties.Select(x =>
+                                //        (Name: x.Name.ToCamelCase(),
+                                //        Schema: new OpenApiSchema()
+                                //        {
+                                //            Type = DbTypes.ToJsType(x.Type),
+                                //            Title = x.Name.TrimStart('@').ToCamelCase(),
+                                //            MaxLength = x.MaxLength
+                                //        })
+                                //    )
+                                //    .ToDictionary(
+                                //        keySelector: x => x.Name,
+                                //        elementSelector: x => x.Schema,
+                                //        comparer: StringComparer.InvariantCultureIgnoreCase)
+                                //}
                             }
                         }
                     }
                 };
 
-                pathItem.Operations.Add(OperationType.Get, openApiOperation);
+                var openApiOperation = new OpenApiOperation
+                {
+                    Tags = new List<OpenApiTag>() { new OpenApiTag() { Name = firstSegment } },
+                    OperationId = functionName,
+                    Parameters = pathParameters,
+                    Responses = new OpenApiResponses() { { "200", responseSchema } }
+                };
 
-                //openApiDocument.Definitions.Add(resultName, resultSchema);
+                var pathItem = new OpenApiPathItem
+                {
+                    Operations = new Dictionary<OperationType, OpenApiOperation>()
+                    {
+                        { OperationType.Get, openApiOperation}
+                    }
+                };
 
                 openApiDocument.Paths.Add($"/{pathName}", pathItem);
+                openApiDocument.Tags.Add(new OpenApiTag
+                {
+                    Name = "ProxyR Endpoints",
+                    Description = "List all ProxyR endpoints"
+                });
             }
         }
     }

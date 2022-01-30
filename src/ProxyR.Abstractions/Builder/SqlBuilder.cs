@@ -156,7 +156,7 @@ namespace ProxyR.Abstractions.Builder
             StartNewLine("ON");
             Indent(onClause =>
             {
-                var prefix = string.Empty;
+                var prefix = String.Empty;
                 foreach (var keyField in keyFields)
                 {
                     onClause.StartNewLine($"{prefix}TARGET.[{keyField}] = SOURCE.[{keyField}]");
@@ -214,10 +214,10 @@ namespace ProxyR.Abstractions.Builder
             return this;
         }
 
-        public SqlBuilder IfTableExists(string tableName, Action<SqlBuilder> ifBlock, Action<SqlBuilder> elseBlock = null, bool not = false)
+        public SqlBuilder TableExists(string tableName, Action<SqlBuilder> ifBlock, Action<SqlBuilder> elseBlock = null, bool not = false)
         {
             var identifier = Sql.GetSchemaAndObjectName(tableName);
-            var notPart = not ? "NOT " : string.Empty;
+            var notPart = not ? "NOT " : String.Empty;
 
             IfElse(conditionExpression: condition => condition
                     .Literal(notPart)
@@ -227,16 +227,16 @@ namespace ProxyR.Abstractions.Builder
             return this;
         }
 
-        public SqlBuilder IfNotTableExists(string tableName, Action<SqlBuilder> ifSegment, Action<SqlBuilder> elseSegment = null)
+        public SqlBuilder TableNotExists(string tableName, Action<SqlBuilder> ifSegment, Action<SqlBuilder> elseSegment = null)
         {
-            IfTableExists(tableName, ifSegment, elseSegment, not: true);
+            TableExists(tableName, ifSegment, elseSegment, not: true);
             return this;
         }
 
-        public SqlBuilder IfColumnExists(string columnName, string tableName, Action<SqlBuilder> ifSegment, Action<SqlBuilder> elseSegment = null, bool not = false)
+        public SqlBuilder ColumnExists(string columnName, string tableName, Action<SqlBuilder> ifSegment, Action<SqlBuilder> elseSegment = null, bool not = false)
         {
             var identifier = Sql.GetSchemaAndObjectName(tableName);
-            var notPart = not ? "NOT " : string.Empty;
+            var notPart = not ? "NOT " : String.Empty;
 
             IfElse(conditionExpression: condition => condition
                     .Literal(notPart)
@@ -246,13 +246,13 @@ namespace ProxyR.Abstractions.Builder
             return this;
         }
 
-        public SqlBuilder IfNotColumnExists(string columnName, string tableName, Action<SqlBuilder> ifSegment, Action<SqlBuilder> elseSegment = null)
+        public SqlBuilder ColumnNotExists(string columnName, string tableName, Action<SqlBuilder> ifSegment, Action<SqlBuilder> elseSegment = null)
         {
-            IfColumnExists(columnName, tableName, ifSegment, elseSegment, not: true);
+            ColumnExists(columnName, tableName, ifSegment, elseSegment, not: true);
             return this;
         }
 
-        public SqlBuilder If(Action<SqlBuilder> conditionExpression, Action<SqlBuilder> ifSegment, Action<SqlBuilder> elseSegment = null)
+        public SqlBuilder If(Action<SqlBuilder> conditionExpression, Action<SqlBuilder> ifSegment)
         {
             IfElse(conditionExpression, ifSegment);
             return this;
@@ -302,7 +302,7 @@ namespace ProxyR.Abstractions.Builder
         {
             foreach (var column in table.Columns.Cast<DataColumn>())
             {
-                IfNotColumnExists(
+                ColumnNotExists(
                     column.ColumnName,
                     tableName,
                     ifSegment => ifSegment.AddColumn(tableName, column.ColumnName, DbTypes.GetDbTypeSyntax(column.DataType), column.AllowDBNull));
@@ -355,18 +355,18 @@ namespace ProxyR.Abstractions.Builder
             return this;
         }
 
-        public SqlBuilder IfConstraintExists(string constraintName, Action<SqlBuilder> ifSegment, Action<SqlBuilder> elseSegment = null, bool not = false)
+        public SqlBuilder ConstraintExists(string constraintName, Action<SqlBuilder> ifSegment, Action<SqlBuilder> elseSegment = null, bool not = false)
         {
-            var notPart = not ? "NOT " : string.Empty;
+            var notPart = not ? "NOT " : String.Empty;
             IfElse(conditionExpression: condition => condition.Literal(notPart).Literal($"EXISTS (SELECT TOP 1 1 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME = {Sql.Quote(constraintName)})"),
                 ifSegment,
                 elseSegment);
             return this;
         }
 
-        public SqlBuilder IfNotConstraintExists(string constraintName, Action<SqlBuilder> ifSegment, Action<SqlBuilder> elseSegment = null)
+        public SqlBuilder ConstraintNotExists(string constraintName, Action<SqlBuilder> ifSegment, Action<SqlBuilder> elseSegment = null)
         {
-            return IfConstraintExists(constraintName, ifSegment, elseSegment, not: true);
+            return ConstraintExists(constraintName, ifSegment, elseSegment, not: true);
         }
 
         public SqlBuilder DropTableIfExists(string tableName)
@@ -409,7 +409,7 @@ namespace ProxyR.Abstractions.Builder
 
         public SqlBuilder Line()
         {
-            Line(string.Empty);
+            Line(String.Empty);
             return this;
         }
 
@@ -422,7 +422,7 @@ namespace ProxyR.Abstractions.Builder
 
         public SqlBuilder StartOfLine(string line = null)
         {
-            line = line ?? string.Empty;
+            line = line ?? String.Empty;
             _builder.Append(line.Indent(tabCount: IndentLevel));
             return this;
         }

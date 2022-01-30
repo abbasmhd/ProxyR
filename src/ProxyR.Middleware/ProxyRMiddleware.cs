@@ -22,7 +22,6 @@ namespace ProxyR.Middleware
 {
     public class ProxyRMiddleware
     {
-
         private readonly RequestDelegate _next;
         private readonly ILogger<ProxyRMiddleware> _logger;
         private readonly IConfiguration _configuration;
@@ -45,7 +44,6 @@ namespace ProxyR.Middleware
 
         private class ParameterBuilder
         {
-
             /// <summary>
             ///     The collection of parameters being built.
             /// </summary>
@@ -424,8 +422,13 @@ namespace ProxyR.Middleware
             return rootExpression;
         }
 
-        private void BuildSqlUnit(SqlBuilder unit, ParameterBuilder paramBuilder, ProxyRQueryParameters requestParams,
-                                  string functionSchema, string functionName, string[] functionArguments)
+        private void BuildSqlUnit(
+            SqlBuilder unit,
+            ParameterBuilder paramBuilder,
+            ProxyRQueryParameters requestParams,
+            string functionSchema,
+            string functionName,
+            string[] functionArguments)
         {
             unit.Comment("Queries and outputs the results.", "Optionally including, paging, sorting, filtering and grouping.");
             BuildSelectStatement(unit, paramBuilder, requestParams, functionSchema, functionName, functionArguments);

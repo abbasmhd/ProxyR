@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace ProxyR.Abstractions
 {
-
     public class ProxyROptions
     {
         /// <summary>
