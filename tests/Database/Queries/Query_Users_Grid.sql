@@ -10,6 +10,7 @@ RETURNS TABLE AS RETURN
           ,u.[Email]
           ,u.[IsEnabled]
           ,u.[Timestamp]
+          ,r.[Name]     AS [Role]
   FROM [User] u
   JOIN [UserRole] ur on ur.[UserId] = u.[UserId]
   JOIN [Role] r ON r.[RoleId] = ur.[RoleId]

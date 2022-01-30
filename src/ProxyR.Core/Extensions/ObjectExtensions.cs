@@ -71,7 +71,7 @@ namespace ProxyR.Core.Extensions
         public static TTarget Clone<TSource, TTarget>(this TSource source) where TTarget : new()
         {
             var target = new TTarget();
-            Copy(source, target);
+            Clone(source, target);
             return target;
         }
 
@@ -79,7 +79,7 @@ namespace ProxyR.Core.Extensions
         /// Copies all the properties from one object to another.
         /// But only where the properties have the same name.
         /// </summary>
-        public static TSource Copy<TSource, TTarget>(this TSource source, TTarget target)
+        public static TSource Clone<TSource, TTarget>(this TSource source, TTarget target)
         {
             var sourceType = source?.GetType() ?? typeof(TSource);
             var targetType = target?.GetType() ?? typeof(TTarget);

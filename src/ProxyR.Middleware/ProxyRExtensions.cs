@@ -33,8 +33,8 @@ namespace ProxyR.Middleware
         {
             var optionsBuilder = new ProxyROptionsBuilder();
             builderFunc?.Invoke(optionsBuilder);
-            services.Configure<ProxyROptions>(target => optionsBuilder.Options.Copy(target));
-            services.Configure<ProxyRRuntimeOptions>(target => optionsBuilder.RuntimeOptions.Copy(target));
+            services.Configure<ProxyROptions>(target => optionsBuilder.Options.Clone(target));
+            services.Configure<ProxyRRuntimeOptions>(target => optionsBuilder.RuntimeOptions.Clone(target));
 
             return services;
         }

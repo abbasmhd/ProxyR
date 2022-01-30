@@ -53,11 +53,10 @@ namespace ProxyR.Abstractions.Execution
         /// <summary>
         /// Executes and receives the first entity from the result-set.
         /// </summary>
-        public TEntity FirstOrDefault<TEntity>()
-            where TEntity : class, new()
+        public TEntity FirstOrDefault<TEntity>() where TEntity : class, new()
         {
-            var result = FirstOrDefaultAsync<TEntity>().Result;
-            return result;
+            var result = GetAllEntities<TEntity>();
+            return result.FirstOrDefault();
         }
 
         /// <summary>
@@ -65,9 +64,8 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public async Task<TEntity> FirstOrDefaultAsync<TEntity>() where TEntity : class, new()
         {
-            var result = (await GetAllEntities<TEntity>())
-                .FirstOrDefault();
-            return result;
+            var result = await GetAllEntitiesAsync<TEntity>();
+            return result.FirstOrDefault();
         }
 
         /// <summary>
@@ -76,8 +74,8 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public TEntity FirstOrDefault<TEntity>(Func<TEntity, bool> predicate) where TEntity : class, new()
         {
-            var result = FirstOrDefaultAsync(predicate).Result;
-            return result;
+            var result = GetAllEntities<TEntity>();
+            return result.FirstOrDefault(predicate);
         }
 
         /// <summary>
@@ -86,9 +84,8 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public async Task<TEntity> FirstOrDefaultAsync<TEntity>(Func<TEntity, bool> predicate) where TEntity : class, new()
         {
-            var result = (await GetAllEntities<TEntity>())
-                .FirstOrDefault(predicate);
-            return result;
+            var result = await GetAllEntitiesAsync<TEntity>();
+            return result.FirstOrDefault(predicate);
         }
 
         /// <summary>
@@ -96,8 +93,8 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public List<TEntity> ToList<TEntity>() where TEntity : class, new()
         {
-            var result = ToListAsync<TEntity>().Result;
-            return result;
+            var results = GetAllEntities<TEntity>();
+            return results.ToList();
         }
 
         /// <summary>
@@ -105,8 +102,8 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public async Task<List<TEntity>> ToListAsync<TEntity>() where TEntity : class, new()
         {
-            var results = (await GetAllEntities<TEntity>()).ToList();
-            return results;
+            var results = await GetAllEntitiesAsync<TEntity>();
+            return results.ToList();
         }
 
         /// <summary>
@@ -114,8 +111,8 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public TEntity[] ToArray<TEntity>() where TEntity : class, new()
         {
-            var result = ToArrayAsync<TEntity>().Result;
-            return result;
+            var results = GetAllEntities<TEntity>();
+            return results.ToArray();
         }
 
         /// <summary>
@@ -123,8 +120,8 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public async Task<TEntity[]> ToArrayAsync<TEntity>() where TEntity : class, new()
         {
-            var results = (await GetAllEntities<TEntity>()).ToArray();
-            return results;
+            var results = await GetAllEntitiesAsync<TEntity>();
+            return results.ToArray();
         }
 
         public IEnumerable<TEntity> ToEnumerable<TEntity>() where TEntity : class, new()
@@ -145,7 +142,24 @@ namespace ProxyR.Abstractions.Execution
             }
         }
 
-        private async Task<IEnumerable<TEntity>> GetAllEntities<TEntity>() where TEntity : class, new()
+        private IEnumerable<TEntity> GetAllEntities<TEntity>() where TEntity : class, new()
+        {
+            // Select the results into a DataTable.
+            var table = ToDataTable();
+
+            // Create the map now, so that we
+            var map = DbEntityMap.GetOrCreate<TEntity>();
+
+            // Transform into entities.
+            var results = table
+                .Rows
+                .Cast<DataRow>()
+                .Select(s => s.ToEntity<TEntity>(map));
+
+            return results;
+        }
+
+        private async Task<IEnumerable<TEntity>> GetAllEntitiesAsync<TEntity>() where TEntity : class, new()
         {
             // Select the results into a DataTable.
             var table = await ToDataTableAsync();
@@ -167,8 +181,13 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public int Execute(DbTransaction transaction = null)
         {
-            var rowsAffected = ExecuteAsync(transaction).Result;
-            return rowsAffected;
+            using (var commandFactoryResult = _commandFactory().Result)
+            {
+                var command = commandFactoryResult.Command;
+                ApplyCommandSettings(commandFactoryResult, transaction);
+                var rowsAffected = command.ExecuteNonQuery();
+                return rowsAffected;
+            }
         }
 
         /// <summary>
@@ -190,8 +209,14 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public TScalar ToScalar<TScalar>()
         {
-            var result = ToScalarAsync<TScalar>().Result;
-            return result;
+            using (var commandFactoryResult = _commandFactory().Result)
+            {
+                var command = commandFactoryResult.Command;
+                ApplyCommandSettings(commandFactoryResult);
+                var value = command.ExecuteScalar();
+                var convertedValue = (TScalar)ConversionUtility.Convert(value, typeof(TScalar));
+                return convertedValue;
+            }
         }
 
         /// <summary>
@@ -225,24 +250,23 @@ namespace ProxyR.Abstractions.Execution
         {
             var list = new List<TScalar>();
 
-            using (var commandFactoryResult = _commandFactory().Result)
+            using (var commandFactoryResult = await _commandFactory())
             {
                 var command = commandFactoryResult.Command;
                 ApplyCommandSettings(commandFactoryResult);
 
-                using (var reader = command.ExecuteReader(CommandBehavior.CloseConnection))
+                using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                 {
                     while (await reader.ReadAsync())
                     {
                         var value = reader[0];
                         var convertedValue = (TScalar)Convert.ChangeType(value, typeof(TScalar));
-
                         list.Add(convertedValue);
                     }
                 }
             }
 
-            return list.ToArray();
+            return list;
         }
 
         /// <summary>
@@ -252,13 +276,11 @@ namespace ProxyR.Abstractions.Execution
         {
             using (var commandFactoryResult = _commandFactory().Result)
             {
-
                 var command = commandFactoryResult.Command;
                 ApplyCommandSettings(commandFactoryResult);
 
                 using (var reader = command.ExecuteReader(CommandBehavior.CloseConnection))
                 {
-
                     var table = new DataTable();
                     var hasDiscoveredColumnTypes = false;
 
@@ -268,7 +290,6 @@ namespace ProxyR.Abstractions.Execution
                     // Read each row into the table.
                     while (reader.Read())
                     {
-
                         // Have we set the column-types yet?
                         if (!hasDiscoveredColumnTypes)
                         {
@@ -281,13 +302,9 @@ namespace ProxyR.Abstractions.Execution
                         reader.GetValues(row.ItemArray);
 
                         yield return row;
-
                     }
-
                 }
-
             }
-
         }
 
         /// <summary>
@@ -310,7 +327,15 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public DataTable ToDataTable(bool closeConnection = true, DbTransaction transaction = null)
         {
-            var table = ToDataTableAsync(closeConnection, transaction).Result;
+            // Read the first table only.
+            var dataSet = ToDataSet(1, closeConnection, transaction);
+            if (dataSet.Tables.Count < 1)
+            {
+                throw new InvalidOperationException("No result-sets were read, no data-table to return.");
+            }
+
+            // Return that table.
+            var table = dataSet.Tables[0];
             return table;
         }
 
@@ -334,33 +359,24 @@ namespace ProxyR.Abstractions.Execution
         /// <summary>
         /// Executes the command and pulls in all the result-sets into a DataSet.
         /// </summary>
-        public DataSet ToDataSet()
+        public DataSet ToDataSet(int? maxTables = null, bool closeConnection = true, DbTransaction transaction = null)
         {
-            var dataSet = ToDataSetAsync().Result;
-            return dataSet;
-        }
+            //var dataSet = ToDataSetAsync().Result;
+            //return dataSet;
 
-        /// <summary>
-        /// Executes the command and pulls in all the result-sets into a DataSet.
-        /// </summary>
-        public async Task<DataSet> ToDataSetAsync(int? maxTables = null, bool closeConnection = true, DbTransaction transaction = null)
-        {
-            using (var commandFactoryResult = await _commandFactory())
+            using (var commandFactoryResult = _commandFactory().Result)
             {
-
                 var command = commandFactoryResult.Command;
                 ApplyCommandSettings(commandFactoryResult, transaction);
 
-                using (var reader = await command.ExecuteReaderAsync(closeConnection ? CommandBehavior.CloseConnection : CommandBehavior.Default))
+                using (var reader = command.ExecuteReader(closeConnection ? CommandBehavior.CloseConnection : CommandBehavior.Default))
                 {
-
                     var dataSet = new DataSet();
 
                     // Iterate throuhg every result-set.
                     do
                     {
-
-                        var table = await ReadDataTable(reader);
+                        var table = ReadDataTable(reader);
                         if (table == null)
                         {
                             break;
@@ -374,10 +390,49 @@ namespace ProxyR.Abstractions.Execution
                             break;
                         }
 
-                    } while (await reader.NextResultAsync());
+                    }
+                    while (reader.NextResult());
 
                     return dataSet;
+                }
+            }
+        }
 
+        /// <summary>
+        /// Executes the command and pulls in all the result-sets into a DataSet.
+        /// </summary>
+        public async Task<DataSet> ToDataSetAsync(int? maxTables = null, bool closeConnection = true, DbTransaction transaction = null)
+        {
+            using (var commandFactoryResult = await _commandFactory())
+            {
+                var command = commandFactoryResult.Command;
+                ApplyCommandSettings(commandFactoryResult, transaction);
+
+                using (var reader = await command.ExecuteReaderAsync(closeConnection ? CommandBehavior.CloseConnection : CommandBehavior.Default))
+                {
+                    var dataSet = new DataSet();
+
+                    // Iterate throuhg every result-set.
+                    do
+                    {
+                        var table = await ReadDataTableAsync(reader);
+                        if (table == null)
+                        {
+                            break;
+                        }
+
+                        dataSet.Tables.Add(table);
+
+                        // Mave we got too many tables?
+                        if (maxTables != null && maxTables >= dataSet.Tables.Count)
+                        {
+                            break;
+                        }
+
+                    }
+                    while (await reader.NextResultAsync());
+
+                    return dataSet;
                 }
             }
         }
@@ -385,7 +440,7 @@ namespace ProxyR.Abstractions.Execution
         /// <summary>
         /// Reads the entries of DataReader into a DataTable, used internally in some methods.
         /// </summary>
-        private static async Task<DataTable> ReadDataTable(DbDataReader reader)
+        private static async Task<DataTable> ReadDataTableAsync(DbDataReader reader)
         {
             var table = new DataTable();
             var hasDiscoveredColumnTypes = false;
@@ -416,6 +471,43 @@ namespace ProxyR.Abstractions.Execution
 
                 table.Rows.Add(row);
 
+            }
+
+            return table;
+        }
+
+        /// <summary>
+        /// Reads the entries of DataReader into a DataTable, used internally in some methods.
+        /// </summary>
+        private static DataTable ReadDataTable(DbDataReader reader)
+        {
+            var table = new DataTable();
+            var hasDiscoveredColumnTypes = false;
+
+            // Create the columns from the column names.
+            if (!CreateTableColumns(reader, table))
+            {
+                return null;
+            }
+
+            // Read each row into the table.
+            while (reader.Read())
+            {
+                // Have we set the column-types yet?
+                if (!hasDiscoveredColumnTypes)
+                {
+                    SetTableColumnTypes(reader, table);
+                    hasDiscoveredColumnTypes = true;
+                }
+
+                // Read the values into the row, and adding to the table..
+                var row = table.NewRow();
+                for (var fieldIndex = 0; fieldIndex < reader.FieldCount; fieldIndex++)
+                {
+                    row[fieldIndex] = reader[fieldIndex];
+                }
+
+                table.Rows.Add(row);
             }
 
             return table;

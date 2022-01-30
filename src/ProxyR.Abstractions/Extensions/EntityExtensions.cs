@@ -139,8 +139,7 @@ namespace ProxyR.Abstractions.Extensions
         /// <summary>
         /// Converts a DataRow into an Entity.
         /// </summary>
-        public static TEntity ToEntity<TEntity>(this DataRow row, DbEntityMap map = null)
-            where TEntity : class, new()
+        public static TEntity ToEntity<TEntity>(this DataRow row, DbEntityMap map = null) where TEntity : class, new()
         {
             if (map == null)
             {
@@ -152,7 +151,6 @@ namespace ProxyR.Abstractions.Extensions
 
             foreach (var entry in map.Entries.Values)
             {
-
                 // Get the column from the parent table.
                 var column = row.Table.Columns[entry.ColumnName];
                 if (column == null)
@@ -174,8 +172,7 @@ namespace ProxyR.Abstractions.Extensions
         /// <summary>
         /// Converts the current entry in the DataReader to an entity.
         /// </summary>
-        public static TEntity ToEntity<TEntity>(this IDataReader dataReader, DbEntityMap map = null)
-            where TEntity : class, new()
+        public static TEntity ToEntity<TEntity>(this IDataReader dataReader, DbEntityMap map = null)            where TEntity : class, new()
         {
             if (map == null)
             {
@@ -203,8 +200,7 @@ namespace ProxyR.Abstractions.Extensions
             return entity;
         }
 
-        public static IEnumerable<TEntity> ToEntity<TEntity>(this DataTable table, DbEntityMap map = null)
-            where TEntity : class, new()
+        public static IEnumerable<TEntity> ToEntity<TEntity>(this DataTable table, DbEntityMap map = null)            where TEntity : class, new()
         {
             if (map == null)
             {
@@ -230,6 +226,7 @@ namespace ProxyR.Abstractions.Extensions
             var property = typeof(TEntity)
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
+
             if (property == null)
             {
                 throw new InvalidOperationException($"Could not sort by {propertyName}, as property does not exist.");
@@ -250,6 +247,7 @@ namespace ProxyR.Abstractions.Extensions
             var lambda = typeof(Expression).GetMethods(BindingFlags.Static | BindingFlags.Public)
                 .Where(m => m.Name == "Lambda")
                 .Where(m => m.IsGenericMethodDefinition);
+
             var genericLambda = lambda.First().MakeGenericMethod(funcType);
             var selector = genericLambda.Invoke(null, new object[] { propExpression, new[] { paramExpression } });
 
@@ -258,6 +256,7 @@ namespace ProxyR.Abstractions.Extensions
                 .GetMethods(BindingFlags.Static | BindingFlags.Public)
                 .First(m => m.Name == orderMethodName)
                 .MakeGenericMethod(typeof(TEntity), property.PropertyType);
+
             var query = (IOrderedQueryable<TEntity>)orderBy.Invoke(null, new object[] { source, selector });
 
             return query;

@@ -30,7 +30,7 @@ namespace ProxyR.Middleware
         /// </summary>
         public ProxyROptionsBuilder CopyFrom(ProxyROptions options)
         {
-            options.Copy(Options);
+            options.Clone(Options);
 
             return this;
         }

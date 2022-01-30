@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebAPI", "tests\WebAPI\WebA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmark", "tests\Benchmark\Benchmark.csproj", "{FA0ECA44-461F-4125-8594-53CA1E523B8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyR.Core.Tests", "ProxyR.Core.Tests\ProxyR.Core.Tests.csproj", "{DEAA2C2D-35DB-48B6-89D8-357DB8C0857A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyR.Core.Tests", "ProxyR.Core.Tests\ProxyR.Core.Tests.csproj", "{DEAA2C2D-35DB-48B6-89D8-357DB8C0857A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyR.OpenAPI", "src\ProxyR.OpenApi\ProxyR.OpenAPI.csproj", "{3210E88B-7BCA-4DF8-A4D4-5CA015C9C13D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{DEAA2C2D-35DB-48B6-89D8-357DB8C0857A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEAA2C2D-35DB-48B6-89D8-357DB8C0857A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DEAA2C2D-35DB-48B6-89D8-357DB8C0857A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3210E88B-7BCA-4DF8-A4D4-5CA015C9C13D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3210E88B-7BCA-4DF8-A4D4-5CA015C9C13D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3210E88B-7BCA-4DF8-A4D4-5CA015C9C13D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3210E88B-7BCA-4DF8-A4D4-5CA015C9C13D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,6 +75,7 @@ Global
 		{45C73CB3-9023-4B60-A2D8-B60877B12FAC} = {65565833-53A7-4D07-9B9B-D0417A2BC396}
 		{FA0ECA44-461F-4125-8594-53CA1E523B8C} = {65565833-53A7-4D07-9B9B-D0417A2BC396}
 		{DEAA2C2D-35DB-48B6-89D8-357DB8C0857A} = {65565833-53A7-4D07-9B9B-D0417A2BC396}
+		{3210E88B-7BCA-4DF8-A4D4-5CA015C9C13D} = {82BE4DFA-989C-4B1D-AACD-6E6F725C2760}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {46095EA3-5FE7-4D66-9499-F63D42E8970B}

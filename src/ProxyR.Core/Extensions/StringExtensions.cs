@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ProxyR.Core.Extensions
 {
@@ -38,7 +39,7 @@ namespace ProxyR.Core.Extensions
         /// <param name="source">The value of the string to convert.</param>
         public static string EmptyToNull(this string source) => string.IsNullOrWhiteSpace(source) ? null : source;
 
-         /// <summary>
+        /// <summary>
         ///     Removes the end of a String.
         /// </summary>
         /// <param name="source"></param>
@@ -148,6 +149,127 @@ namespace ProxyR.Core.Extensions
         /// <returns>True if source is found in the list, false if not</returns>
         public static bool IsNotIn(this string source, params string[] list) => !source.IsIn(list);
 
+        /// <summary>
+        /// Uppercases the first character of the string.
+        /// </summary>
+        public static string ToUpperFirst(this string source)
+        {
+            if (!string.IsNullOrWhiteSpace(source))
+                return source;
+
+            if (!char.IsLetter(source[0]))
+                return source;
+
+            var result = $"{source[0].ToString().ToUpperInvariant()}{new string(source.Skip(1).ToArray())}";
+            return result;
+        }
+
+        /// <summary>
+        /// Converts a Camel, Pascal, Kebab or Snake case into seperate capitalized words
+        /// </summary>
+        public static string ToCapitalWordCase(this string source)
+        {
+            var words = new List<string>();
+            var currentWord = new List<char>();
+            char? lastChar = null;
+
+            foreach (var currentChar in source)
+            {
+                if (currentChar == '_' || currentChar == '-' || currentChar == ' ')
+                {
+                    commitWord();
+                }
+                else if (char.IsUpper(currentChar) && lastChar != null && (!char.IsLetter(lastChar.Value) || !char.IsUpper(lastChar.Value)))
+                {
+                    commitWord();
+                    currentWord.Add(currentChar);
+                }
+                else
+                {
+                    currentWord.Add(currentChar);
+                }
+
+                lastChar = currentChar;
+            }
+
+            commitWord();
+
+            var result = string.Join(" ", words.Select(x => x.Trim())).Trim();
+            return result;
+
+            void commitWord()
+            {
+                if (currentWord.Any())
+                {
+                    var word = new string(currentWord.ToArray());
+                    words.Add(word.ToUpperFirst());
+                    currentWord.Clear();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Converts a Camel, Kebab, Snake or Word case into Pascal-case
+        /// </summary>
+        public static string ToPascalCase(this string source)
+        {
+            var words = new List<string>();
+            var currentWord = new List<char>();
+            char? lastChar = null;
+
+            foreach (var currentChar in source)
+            {
+                if (currentChar == '_' || currentChar == '-' || currentChar == ' ')
+                {
+                    commitWord();
+                }
+                else if (char.IsUpper(currentChar) && lastChar != null && (!char.IsLetter(lastChar.Value) || !char.IsUpper(lastChar.Value)))
+                {
+                    commitWord();
+                    currentWord.Add(currentChar);
+                }
+                else
+                {
+                    currentWord.Add(currentChar);
+                }
+
+                lastChar = currentChar;
+            }
+
+            commitWord();
+
+            var result = string.Join(string.Empty, words.Select(x => x.Trim())).Trim();
+            return result;
+
+            void commitWord()
+            {
+                if (currentWord.Any())
+                {
+                    var word = new string(currentWord.ToArray());
+                    words.Add(word.ToUpperFirst());
+                    currentWord.Clear();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Converts a Pascal-Case string to a Camel-Case one.
+        /// </summary>
+        public static string ToCamelCase(this string value)
+        {
+            // Split into words based on the casing of the characters.
+            var words = Regex.Split(value, "([A-Z]{0,}[a-z]*)")
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToArray();
+
+            // Make the first word lower-case.
+            words[0] = words[0].ToLower();
+
+            // Join to a new result.
+            var result = string.Join(string.Empty, words);
+
+            return result;
+        }
     }
 
 }

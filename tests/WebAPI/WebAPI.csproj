@@ -5,7 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\ProxyR.Middleware\ProxyR.Middleware.csproj" />
+    <ProjectReference Include="..\..\src\ProxyR.OpenApi\ProxyR.OpenAPI.csproj" />
   </ItemGroup>
 
 </Project>

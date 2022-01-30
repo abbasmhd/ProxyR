@@ -5,12 +5,12 @@ using System.Linq.Expressions;
 
 namespace ProxyR.Abstractions.Utilities
 {
-    public class ObjectUtility
+    public static class ObjectUtility
     {
         /// <summary>
         /// Tests every primitive property value to see if they are equal.
         /// </summary>
-        public bool ArePropertiesEqual<TLeft, TRight>(TLeft left, TRight right, params string[] propertyNames)
+        public static bool ArePropertiesEqual<TLeft, TRight>(TLeft left, TRight right, params string[] propertyNames)
         {
             // Get the runtime type of the object falling back onto the compile type.
             var leftType = left?.GetType() ?? typeof(TLeft);
@@ -48,12 +48,14 @@ namespace ProxyR.Abstractions.Utilities
             {
                 var leftValue = joinedProperty.Left.GetValue(left);
                 var rightValue = joinedProperty.Right.GetValue(right);
-                switch (leftValue)
+                if (leftValue == null && rightValue == null)
                 {
-                    case null when rightValue == null:
-                        continue;
-                    case null:
-                        return false;
+                    continue;
+                }
+
+                if (leftValue == null && rightValue != null)
+                {
+                    return false;
                 }
 
                 if (!leftValue.Equals(rightValue))
@@ -68,7 +70,7 @@ namespace ProxyR.Abstractions.Utilities
         /// <summary>
         /// Creates a new instance of the target type, and copies the properties with same names from the source object.
         /// </summary>
-        public TTarget Clone<TSource, TTarget>(TSource source) where TTarget : new()
+        public static TTarget Clone<TSource, TTarget>(TSource source) where TTarget : new()
         {
             var target = new TTarget();
             Copy(source, target);
@@ -79,7 +81,7 @@ namespace ProxyR.Abstractions.Utilities
         /// Copies all the properties from one object to another.
         /// But only where the properties have the same name.
         /// </summary>
-        public TSource Copy<TSource, TTarget>(TSource source, TTarget target)
+        public static TSource Copy<TSource, TTarget>(TSource source, TTarget target)
         {
             var sourceType = source?.GetType() ?? typeof(TSource);
             var targetType = target?.GetType() ?? typeof(TTarget);
@@ -107,7 +109,12 @@ namespace ProxyR.Abstractions.Utilities
         /// <summary>
         /// Gets a property name given an selector expression.
         /// </summary>
-        public static string GetExpressionPropertyName<TEntity, TKey>(Expression<Func<TEntity, TKey>> selector) => ((MemberExpression)selector.Body).Member.Name;
-    }
+        public static string GetExpressionPropertyName<TEntity, TKey>(Expression<Func<TEntity, TKey>> selector)
+        {
+            var propertyExpression = (MemberExpression)selector.Body;
+            var propertyName = propertyExpression.Member.Name;
 
+            return propertyName;
+        }
+    }
 }

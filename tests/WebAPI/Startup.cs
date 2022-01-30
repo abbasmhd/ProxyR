@@ -1,14 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ProxyR.Middleware;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace WebAPI
 {
@@ -27,14 +23,24 @@ namespace WebAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Add swagger services.
+            services.AddOpenApi(options =>
+            {
+                options.CopyFrom(Configuration.GetSection("OpenAPI"));
+                options.UseProxyR(Configuration.GetSection("ProxyR"), _connectionString);
+            });
 
             // Adds the configuration for the database functions queries.
             services.AddProxyR(options => options.BindConfiguration(Configuration.GetSection("ProxyR"))
-                                                 .UseConnectionString(_connectionString));
+                                                 .UseConnectionString(_connectionString)
+                                                 //.OverrideParameter("CurrentUserId", c => c.RequestServices.GetService<ICurrentUser>()?.UserId)
+                                                 //.OverrideParameter("CurrentUserName", c => c.RequestServices.GetService<ICurrentUser>()?.UserName)
+                                                 //.OverrideParameter("CurrentRoleId", c => c.RequestServices.GetService<ICurrentUser>()?.RoleId)
+                                                 //.OverrideParameter("CurrentRoleName", c => c.RequestServices.GetService<ICurrentUser>()?.RoleName)
+                                                 );
 
             // services.AddRazorPages();
-
-            //services.AddControllers();
+            services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -72,6 +78,14 @@ namespace WebAPI
             app.UseProxyR();
             // start url
             // /users/grid
+
+            // Add the Swagger documentation.
+            if (env.IsDevelopment() || env.IsStaging())
+            {
+                app.UseOpenApiDocumentation();
+                app.UseOpenApiUi();
+            }
+
         }
     }
 }
