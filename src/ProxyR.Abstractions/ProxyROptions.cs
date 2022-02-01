@@ -46,10 +46,10 @@ namespace ProxyR.Abstractions
         public string DefaultSchema { get; set; }
 
         /// <summary>
-        ///     The string used when taking path segments, and joining them together to make the
-        ///     function name. Default is empty.
+        ///     The string used when taking path segments, and joining them together to make the name.
+        ///     Default is empty.
         /// </summary>
-        public char? FunctionNameSeperator { get; set; }
+        public char? Seperator { get; set; }
 
         /// <summary>
         ///     The name of the overridden parameters.

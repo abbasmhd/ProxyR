@@ -139,7 +139,7 @@ namespace ProxyR.Middleware
         /// </summary>
         public ProxyROptionsBuilder UseFunctionNameSeperator(char seperator)
         {
-            Options.FunctionNameSeperator = seperator;
+            Options.Seperator = seperator;
 
             return this;
         }

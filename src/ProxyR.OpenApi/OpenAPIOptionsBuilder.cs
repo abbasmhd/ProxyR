@@ -124,15 +124,15 @@ namespace ProxyR.OpenAPI
         /// <summary>
         /// Given the configuration for ProxyR, will map those functions in the OpenAPI document.
         /// </summary>
-        public OpenAPIOptionsBuilder UseProxyR(ProxyROptions options, string? connectionString = default)
+        public OpenAPIOptionsBuilder UseProxyR(ProxyROptions proxyROptions, string? connectionString = default)
         {
             if (String.IsNullOrEmpty(connectionString))
             {
-                UseDocumentFilter<ProxyRDocumentFilter>(options);
+                UseDocumentFilter<ProxyRDocumentFilter>(proxyROptions, this.Options);
             }
             else
             {
-                UseDocumentFilter<ProxyRDocumentFilter>(options, connectionString);
+                UseDocumentFilter<ProxyRDocumentFilter>(proxyROptions, this.Options, connectionString);
             }
 
             return this;

@@ -82,8 +82,9 @@ namespace WebAPI
             // Add the Swagger documentation.
             if (env.IsDevelopment() || env.IsStaging())
             {
-                app.UseOpenApiDocumentation();
-                app.UseOpenApiUi();
+                app.UseOpenApiDocumentation(options => options.CopyFrom(Configuration.GetSection("OpenAPI")));
+
+                app.UseOpenApiUi(options => options.CopyFrom(Configuration.GetSection("OpenAPI")));
             }
 
         }

@@ -10,7 +10,8 @@ namespace ProxyR.OpenAPI.DocumentFilters
 {
     public class ProxyRDocumentFilter : IDocumentFilter
     {
-        private readonly ProxyROptions options;
+        private readonly ProxyROptions proxyROptions;
+        private readonly OpenAPIOptions openAPIOptions;
 
         class ProxyRParameter
         {
@@ -27,33 +28,26 @@ namespace ProxyR.OpenAPI.DocumentFilters
 
         }
 
-        public ProxyRDocumentFilter(ProxyROptions options, string? connectionString = default)
+        public ProxyRDocumentFilter(ProxyROptions proxyROptions, OpenAPIOptions openAPIOptions, string? connectionString = default)
         {
-            this.options = options;
+            this.proxyROptions = proxyROptions;
+            this.openAPIOptions = openAPIOptions;
 
             if (connectionString != default)
             {
-                options.ConnectionString = connectionString;
+                proxyROptions.ConnectionString = connectionString;
             }
         }
 
         public void Apply(OpenApiDocument openApiDocument, DocumentFilterContext context)
         {
-            // Tags are for group the operations
-            var openApiTags = new List<OpenApiTag> {
-                new OpenApiTag {
-                    Name = "ProxyR Endpoints",
-                    Description = "List all ProxyR endpoints"
-                }
-            };
-
-            var prefix = options.Prefix ?? String.Empty;
-            var suffix = options.Suffix ?? String.Empty;
-            var schemaName = options.DefaultSchema ?? "dbo";
-            var excludedParameters = options.ExcludedParameters.ToArray() ?? Array.Empty<string>();
+            var prefix = proxyROptions.Prefix ?? String.Empty;
+            var suffix = proxyROptions.Suffix ?? String.Empty;
+            var schemaName = proxyROptions.DefaultSchema ?? "dbo";
+            var excludedParameters = proxyROptions.ExcludedParameters.ToArray() ?? Array.Empty<string>();
 
             var functionNameQuery = Db.Query(
-                options.ConnectionString,
+                proxyROptions.ConnectionString,
                 $"SELECT Name FROM sys.objects WHERE TYPE IN ('TF', 'IF') AND NAME LIKE @0 + '%' + @1",
                 prefix,
                 suffix);
@@ -63,14 +57,14 @@ namespace ProxyR.OpenAPI.DocumentFilters
             foreach (var functionName in functionNames)
             {
                 var parameterQuery = Db.Query(
-                    options.ConnectionString,
+                    proxyROptions.ConnectionString,
                     @$"SELECT [Name] = name, [Type] = TYPE_NAME(user_type_id), [MaxLength] = max_length
                          FROM SYS.PARAMETERS
                         WHERE OBJECT_ID = OBJECT_ID('[{Sql.Sanitize(schemaName)}].[{Sql.Sanitize(functionName)}]')
                         ORDER BY PARAMETER_ID");
 
                 var columnQuery = Db.Query(
-                    options.ConnectionString,
+                    proxyROptions.ConnectionString,
                     @$"SELECT [Name] = name, [Type] = TYPE_NAME(user_type_id), [MaxLength] = max_length
                          FROM sys.columns
                         WHERE object_id = OBJECT_ID('[{Sql.Sanitize(schemaName)}].[{Sql.Sanitize(functionName)}]')
@@ -83,6 +77,10 @@ namespace ProxyR.OpenAPI.DocumentFilters
 
                 // ProxyR endpoinmt Path/URI.
                 var pathName = pathPart.Replace('_', '/').Trim('/').ToLowerInvariant();
+                if (proxyROptions.IncludeSchemaInPath)
+                {
+                    pathName = $"{schemaName}/{pathName}";
+                }
 
                 var dbParameters = parameterQuery.ToArray<ProxyRParameter>();
 
@@ -145,15 +143,15 @@ namespace ProxyR.OpenAPI.DocumentFilters
                                     Type = "object",
                                     Properties = new Dictionary<string, OpenApiSchema>()
                                     {
-                                        { "Results", 
+                                        { "Results",
                                             new OpenApiSchema()
                                             {
                                                 Reference = new OpenApiReference
-                                                { 
-                                                    Type = ReferenceType.Schema, 
+                                                {
+                                                    Type = ReferenceType.Schema,
                                                     Id = $"{pathPart}_array"
-                                                } 
-                                            } 
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -184,7 +182,13 @@ namespace ProxyR.OpenAPI.DocumentFilters
                     Tags = new List<OpenApiTag>() { new OpenApiTag() { Name = firstSegment } },
                     OperationId = functionName,
                     Parameters = pathParameters,
-                    Responses = new OpenApiResponses() { { "200", responseSchema } }
+                    Responses = new OpenApiResponses() {
+                        { "200", responseSchema },
+                        { "401", new OpenApiResponse { Description = "Unauthorized" } },
+                        { "403", new OpenApiResponse(){ Description = "Forbidden"} },
+                        { "404", new OpenApiResponse(){ Description = "Not Found"} },
+                        { "405", new OpenApiResponse(){ Description = "Method Not Allowed"} },
+                    }
                 };
 
                 var pathItem = new OpenApiPathItem
@@ -198,8 +202,8 @@ namespace ProxyR.OpenAPI.DocumentFilters
                 openApiDocument.Paths.Add($"/{pathName}", pathItem);
                 openApiDocument.Tags.Add(new OpenApiTag
                 {
-                    Name = "ProxyR Endpoints",
-                    Description = "List all ProxyR endpoints"
+                    Name = openAPIOptions.ApiName,
+                    Description = openAPIOptions.ApiDescription
                 });
             }
         }

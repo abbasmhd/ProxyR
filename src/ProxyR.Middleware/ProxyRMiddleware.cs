@@ -423,19 +423,19 @@ namespace ProxyR.Middleware
         }
 
         private void BuildSqlUnit(
-            SqlBuilder unit,
+            SqlBuilder statement,
             ParameterBuilder paramBuilder,
             ProxyRQueryParameters requestParams,
             string functionSchema,
             string functionName,
             string[] functionArguments)
         {
-            unit.Comment("Queries and outputs the results.", "Optionally including, paging, sorting, filtering and grouping.");
-            BuildSelectStatement(unit, paramBuilder, requestParams, functionSchema, functionName, functionArguments);
+            statement.Comment("Queries and outputs the results.", "Optionally including, paging, sorting, filtering and grouping.");
+            BuildSelectStatement(statement, paramBuilder, requestParams, functionSchema, functionName, functionArguments);
             if (requestParams.RequireTotalCount)
             {
-                unit.Comment("Calculates the total row count.", "Optionally including filtering, but no paging or sorting.");
-                BuildSelectStatement(unit, paramBuilder, requestParams, functionSchema, functionName, functionArguments, forCount: true);
+                statement.Comment("Calculates the total row count.", "Optionally including filtering, but no paging or sorting.");
+                BuildSelectStatement(statement, paramBuilder, requestParams, functionSchema, functionName, functionArguments, forCount: true);
             }
         }
 
@@ -444,11 +444,11 @@ namespace ProxyR.Middleware
             // Get safe versions of the segments used 
             // for the schema and function name.
             var defaultSchema = _options.Value.DefaultSchema ?? "dbo";
-            var delimiterChar = _options.Value.FunctionNameSeperator;
+            var delimiterChar = _options.Value.Seperator;
             var delimiterString = delimiterChar?.ToString() ?? String.Empty;
             var functionSchema = _options.Value.IncludeSchemaInPath ? Sql.Sanitize(segments[0]) : defaultSchema;
             var functionSegment = Sql.Sanitize(String.Join(delimiterString, segments.Skip(_options.Value.IncludeSchemaInPath ? 1 : 0))).Trim('_');
-            var functionPrefix = Sql.Sanitize(prefix ?? "wf_");
+            var functionPrefix = Sql.Sanitize(prefix ?? "Query_");
             var functionSuffix = Sql.Sanitize(suffix ?? "_GRID");
             var formattedFunctionName = $"{functionPrefix}{functionSegment}{functionSuffix}";
 

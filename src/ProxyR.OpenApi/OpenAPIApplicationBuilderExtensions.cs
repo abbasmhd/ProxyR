@@ -40,11 +40,6 @@ namespace Microsoft.AspNetCore.Builder
                 options.RouteTemplate = jsonPath;
             });
 
-            pipeline.Use(async (context, next) => {
-                context.Items["welcomeJson:openApi"] = ResolveJsonPath(jsonPath, openApiOptions);
-                await next();
-            });
-
             return pipeline;
         }
 
@@ -83,36 +78,10 @@ namespace Microsoft.AspNetCore.Builder
                 uiPath = "docs";
             }
 
-            //pipeline.Map($"/{uiPath}/swagger-logo.svg", c => c.Use(async (httpContext, n) => {
-            //    httpContext.Response.ContentType = "image/svg+xml";
-            //    await httpContext.Response.Body.WriteAsync(Resources.SwaggerLogoSvg, 0, Resources.SwaggerLogoSvg.Length);
-            //}));
-
-            //pipeline.Map($"/{uiPath}/swagger-material.css", c => c.Use(async (httpContext, n) => {
-            //    httpContext.Response.ContentType = "text/css";
-            //    await httpContext.Response.Body.WriteAsync(Resources.SwaggerMaterialStyles, 0, Resources.SwaggerMaterialStyles.Length);
-            //}));
-
-            //pipeline.Map($"/{uiPath}/swagger-personal.css", c => c.Use(async (httpContext, n) => {
-            //    var bodyText = Resources.SwaggerDepotnetStyles;
-            //    var processedBodyText = bodyText.Replace("{{uiPath}}", uiPath);
-            //    var bodyBytes = Encoding.UTF8.GetBytes(processedBodyText);
-
-            //    httpContext.Response.ContentType = "text/css";
-            //    await httpContext.Response.Body.WriteAsync(bodyBytes, 0, bodyBytes.Length);
-            //}));
-
             pipeline.UseSwaggerUI(options => {
                 options.DocumentTitle = openApiOptions.ApiName;
                 options.RoutePrefix = uiPath;
                 options.SwaggerEndpoint(jsonPath, openApiOptions.ApiName);
-                //options.InjectStylesheet($"/{uiPath}/swagger-material.css");
-                //options.InjectStylesheet($"/{uiPath}/swagger-personal.css");
-            });
-
-            pipeline.Use(async (context, next) => {
-                context.Items["welcomeJson:openApiUI"] = $"/{uiPath}";
-                await next();
             });
 
             return pipeline;
