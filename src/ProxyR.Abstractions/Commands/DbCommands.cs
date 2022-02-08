@@ -13,11 +13,16 @@ namespace ProxyR.Abstractions.Commands
         public static DbResult ObjectExists(string connectionString, string objectName, string schemaName = "dbo", params DbObjectType[] dbObjectTypes)
         {
             var dbObjectTypeValues = dbObjectTypes.Select(DbTypes.GetDbObjectTypeSymbol);
-
             var sql = $"SELECT TOP 1 1 FROM SYS.OBJECTS WHERE OBJECT_ID = OBJECT_ID('[' + @schemaName + '].[' + @objectName + ']') AND TYPE IN ({Sql.Values(dbObjectTypeValues)})";
-
             var results = Db.Query(connectionString, sql, new { objectName, schemaName });
+            return results;
+        }
 
+        public static DbResult GetObjectType(string connectionString, string objectName, string schemaName = "dbo", params DbObjectType[] dbObjectTypes)
+        {
+            var dbObjectTypeValues = dbObjectTypes.Select(DbTypes.GetDbObjectTypeSymbol);
+            var sql = $"SELECT TOP 1 TYPE FROM SYS.OBJECTS WHERE OBJECT_ID = OBJECT_ID('[' + @schemaName + '].[' + @objectName + ']') AND TYPE IN ({Sql.Values(dbObjectTypeValues)})";
+            var results = Db.Query(connectionString, sql, new { objectName, schemaName });
             return results;
         }
 

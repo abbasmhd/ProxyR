@@ -81,29 +81,39 @@ namespace ProxyR.Abstractions.Commands
 
         public static string GetDbObjectTypeSymbol(DbObjectType x)
         {
-            switch (x)
+            return x switch
             {
-                case DbObjectType.InlineTableValuedFunction:
-                    return "IF";
-                case DbObjectType.ServiceQueue:
-                    return "SQ";
-                case DbObjectType.ForeignKeyConstraint:
-                    return "F";
-                case DbObjectType.UserTable:
-                    return "U";
-                case DbObjectType.DefaultConstraint:
-                    return "D";
-                case DbObjectType.PrimaryKeyConstraint:
-                    return "PK";
-                case DbObjectType.SystemTable:
-                    return "S";
-                case DbObjectType.InternalTable:
-                    return "IT";
-                case DbObjectType.TableValuedFunction:
-                    return "TF";
-                default:
-                    throw new NotSupportedException($"DbObjectType [{x}] is not supported");
-            }
+                DbObjectType.InlineTableValuedFunction => "IF",
+                DbObjectType.ServiceQueue              => "SQ",
+                DbObjectType.ForeignKeyConstraint      => "F",
+                DbObjectType.UserTable                 => "U",
+                DbObjectType.DefaultConstraint         => "D",
+                DbObjectType.PrimaryKeyConstraint      => "PK",
+                DbObjectType.SystemTable               => "S",
+                DbObjectType.InternalTable             => "IT",
+                DbObjectType.TableValuedFunction       => "TF",
+                DbObjectType.View                      => "V",
+                _ => throw new NotSupportedException($"DbObjectType [{x}] is not supported"),
+            };
+        }
+        
+        public static DbObjectType ToDbObjectType(this string value)
+        {
+            value = value?.Trim().ToUpper();
+            return value switch
+            {
+                "IF" => DbObjectType.InlineTableValuedFunction,
+                "SQ" => DbObjectType.ServiceQueue,
+                "F"  => DbObjectType.ForeignKeyConstraint,
+                "U"  => DbObjectType.UserTable,
+                "D"  => DbObjectType.DefaultConstraint,
+                "PK" => DbObjectType.PrimaryKeyConstraint,
+                "S"  => DbObjectType.SystemTable,
+                "IT" => DbObjectType.InternalTable,
+                "TF" => DbObjectType.TableValuedFunction,
+                "V"  => DbObjectType.View,
+                _    => DbObjectType.NotSuported,
+            };
         }
 
         public static string FromDbType(string dbTypeString)
@@ -119,7 +129,7 @@ namespace ProxyR.Abstractions.Commands
                 case SQLType.filestream:
                 case SQLType.image:
                 case SQLType.rowversion:
-                case SQLType.timestamp: //?
+                case SQLType.timestamp:
                     return "byte[]";
                 case SQLType.tinyint:
                     return "byte";
@@ -169,13 +179,13 @@ namespace ProxyR.Abstractions.Commands
 
         public enum SQLType
         {
-            varbinary,//(1)
-            binary,//(1)
+            varbinary,
+            binary,
             image,
             varchar,
             @char,
-            nvarchar,//(1)
-            nchar,//(1)
+            nvarchar,
+            nchar,
             text,
             ntext,
             uniqueidentifier,

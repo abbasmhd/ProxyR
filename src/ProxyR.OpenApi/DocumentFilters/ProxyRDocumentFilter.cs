@@ -48,7 +48,7 @@ namespace ProxyR.OpenAPI.DocumentFilters
 
             var functionNameQuery = Db.Query(
                 proxyROptions.ConnectionString,
-                $"SELECT Name FROM sys.objects WHERE TYPE IN ('TF', 'IF') AND NAME LIKE @0 + '%' + @1",
+                $"SELECT Name FROM sys.objects WHERE TYPE IN ('TF', 'IF', 'V') AND NAME LIKE @0 + '%' + @1",
                 prefix,
                 suffix);
 
@@ -73,7 +73,6 @@ namespace ProxyR.OpenAPI.DocumentFilters
                 var pathPart = functionName.Remove(0, prefix.Length);
                 pathPart = pathPart.Remove(prefix.Length - suffix.Length, suffix.Length);
 
-                var firstSegment = pathPart.Split('_').First();
 
                 // ProxyR endpoinmt Path/URI.
                 var pathName = pathPart.Replace('_', '/').Trim('/').ToLowerInvariant();
@@ -103,8 +102,38 @@ namespace ProxyR.OpenAPI.DocumentFilters
                     .ToList();
 
                 var dbProperties = columnQuery.ToArray<ProxyRColumn>();
+                var nameSegments = pathPart.Split('_');
+                string schemaModelName;
+                string schemaListName;
 
-                openApiDocument.Components.Schemas.Add($"{pathPart}_model", new OpenApiSchema
+                var index = 0;
+                do
+                {
+                    (schemaModelName, schemaListName) = setSchemaName(nameSegments, index++);
+                }
+                while (openApiDocument.Components.Schemas.ContainsKey(schemaModelName)
+                    || openApiDocument.Components.Schemas.ContainsKey(schemaListName));
+
+                AddDocumentInfo(
+                    functionName,
+                    pathName,
+                    pathParameters,
+                    dbProperties,
+                    nameSegments,
+                    schemaModelName,
+                    schemaListName);
+            }
+
+            void AddDocumentInfo(
+                string functionName,
+                string pathName,
+                List<OpenApiParameter> pathParameters,
+                ProxyRColumn[] dbProperties,
+                string[] nameSegments,
+                string schemaModelName,
+                string schemaListName)
+            {
+                openApiDocument.Components.Schemas.Add(schemaModelName, new OpenApiSchema
                 {
                     Type = "object",
                     Properties = dbProperties.Select(x =>
@@ -122,12 +151,12 @@ namespace ProxyR.OpenAPI.DocumentFilters
                             comparer: StringComparer.InvariantCultureIgnoreCase)
                 });
 
-                openApiDocument.Components.Schemas.Add($"{pathPart}_array", new OpenApiSchema
+                openApiDocument.Components.Schemas.Add(schemaListName, new OpenApiSchema
                 {
                     Type = "array",
                     Items = new OpenApiSchema
                     {
-                        Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = $"{pathPart}_model" }
+                        Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = schemaModelName }
                     }
                 });
 
@@ -149,29 +178,12 @@ namespace ProxyR.OpenAPI.DocumentFilters
                                                 Reference = new OpenApiReference
                                                 {
                                                     Type = ReferenceType.Schema,
-                                                    Id = $"{pathPart}_array"
+                                                    Id = schemaListName
                                                 }
                                             }
                                         }
                                     }
                                 }
-                                //Schema = new OpenApiSchema
-                                //{
-                                //    Type = "object",
-                                //    Properties = dbProperties.Select(x =>
-                                //        (Name: x.Name.ToCamelCase(),
-                                //        Schema: new OpenApiSchema()
-                                //        {
-                                //            Type = DbTypes.ToJsType(x.Type),
-                                //            Title = x.Name.TrimStart('@').ToCamelCase(),
-                                //            MaxLength = x.MaxLength
-                                //        })
-                                //    )
-                                //    .ToDictionary(
-                                //        keySelector: x => x.Name,
-                                //        elementSelector: x => x.Schema,
-                                //        comparer: StringComparer.InvariantCultureIgnoreCase)
-                                //}
                             }
                         }
                     }
@@ -179,15 +191,16 @@ namespace ProxyR.OpenAPI.DocumentFilters
 
                 var openApiOperation = new OpenApiOperation
                 {
-                    Tags = new List<OpenApiTag>() { new OpenApiTag() { Name = firstSegment } },
+                    Tags = new List<OpenApiTag>() { new OpenApiTag() { Name = nameSegments[0] } },
                     OperationId = functionName,
                     Parameters = pathParameters,
                     Responses = new OpenApiResponses() {
                         { "200", responseSchema },
-                        { "401", new OpenApiResponse { Description = "Unauthorized" } },
-                        { "403", new OpenApiResponse(){ Description = "Forbidden"} },
-                        { "404", new OpenApiResponse(){ Description = "Not Found"} },
-                        { "405", new OpenApiResponse(){ Description = "Method Not Allowed"} },
+                        { "400", new OpenApiResponse() { Description = "Bad Request" } },
+                        { "401", new OpenApiResponse() { Description = "Unauthorized" } },
+                        { "403", new OpenApiResponse() { Description = "Forbidden"} },
+                        { "404", new OpenApiResponse() { Description = "Not Found"} },
+                        { "405", new OpenApiResponse() { Description = "Method Not Allowed"} },
                     }
                 };
 
@@ -205,6 +218,14 @@ namespace ProxyR.OpenAPI.DocumentFilters
                     Name = openAPIOptions.ApiName,
                     Description = openAPIOptions.ApiDescription
                 });
+            }
+
+            static (string schemaModelName, string schemaListName) setSchemaName(string[] nameSegments, int index = 0)
+            {
+                var suffix = index > 0 ? index.ToString() : String.Empty;
+                var schemaModelName = $"{String.Join("", nameSegments)}Model{suffix}" ;
+                var schemaListName = $"{String.Join("", nameSegments)}List{suffix}";
+                return (schemaModelName, schemaListName);
             }
         }
     }

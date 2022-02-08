@@ -110,17 +110,19 @@ namespace ProxyR.Middleware
             // Resolve the function name.
             var (functionSchema, functionName) = FormatFunctionName(segments, _options.Value?.Prefix, _options.Value?.Suffix);
 
-            // Does the function exist?
-            var functionExists = await DbCommands
-                                  .ObjectExists(connectionString, functionName, functionSchema, DbObjectType.TableValuedFunction, DbObjectType.InlineTableValuedFunction)
-                                  .ToScalarAsync<bool?>();
+            // Does the object exist?
+            var objectType = await DbCommands
+                                  .GetObjectType(connectionString, functionName, functionSchema,
+                                                DbObjectType.TableValuedFunction,
+                                                DbObjectType.InlineTableValuedFunction, DbObjectType.View)
+                                  .ToScalarAsync<string>();
 
-            if (!(functionExists.GetValueOrDefault() && functionExists.HasValue))
+            if (String.IsNullOrWhiteSpace(objectType))
             {
                 await _next(context);
-
                 return;
             }
+
             // Get it into an interrogatable JSON object (JObject).
             var queryParams = requestBody != null
                 ? JsonConvert.DeserializeObject<ProxyRQueryParameters>(requestBody)
@@ -151,19 +153,31 @@ namespace ProxyR.Middleware
                 parameterModifier(context, paramValues);
             }
 
-            // Get all the parameter names currently on the function.
-            var functionParamNames = await DbCommands
-                                          .GetParameterNames(connectionString, functionName, functionSchema)
-                                          .ToScalarArrayAsync<string>();
+            IEnumerable<string> functionParamNames;
+            IEnumerable<string> functionArguments;
 
-            // var matchedParams = requestParams
-            var functionArguments = from functionParamName in functionParamNames
-                                    let paramName = functionParamName.TrimStart('@')
-                                    let paramExists = paramValues.ContainsKey(paramName)
-                                    let paramArgument = paramExists
-                                        ? paramBuilder.Add(paramValues[paramName])
-                                        : "DEFAULT"
-                                    select paramArgument;
+            var isView = objectType.ToDbObjectType() == DbObjectType.View;
+            if (isView)
+            {
+                functionArguments = new List<string>();
+                functionParamNames = new List<string>();
+            }
+            else
+            {
+                // Get all the parameter names currently on the function.
+                functionParamNames = await DbCommands
+                                              .GetParameterNames(connectionString, functionName, functionSchema)
+                                              .ToScalarArrayAsync<string>();
+
+                // var matchedParams = requestParams
+                functionArguments = from functionParamName in functionParamNames
+                                        let paramName = functionParamName.TrimStart('@')
+                                        let paramExists = paramValues.ContainsKey(paramName)
+                                        let paramArgument = paramExists
+                                            ? paramBuilder.Add(paramValues[paramName])
+                                            : "DEFAULT"
+                                        select paramArgument;
+            }
 
             // Check for required parameters.
             if (_options.Value?.RequiredParameterNames != null && _options.Value.RequiredParameterNames.Any())
@@ -186,7 +200,7 @@ namespace ProxyR.Middleware
 
             // Generate the SELECT statements from the parameters given.
             var sqlBuilder = new SqlBuilder();
-            BuildSqlUnit(sqlBuilder, paramBuilder, queryParams, functionSchema, functionName, functionArguments.ToArray());
+            BuildSqlUnit(sqlBuilder, paramBuilder, queryParams, functionSchema, functionName, functionArguments.ToArray(), isView);
 
             // Get the SQL generated.
             var sql = sqlBuilder.ToString();
@@ -428,14 +442,15 @@ namespace ProxyR.Middleware
             ProxyRQueryParameters requestParams,
             string functionSchema,
             string functionName,
-            string[] functionArguments)
+            string[] functionArguments,
+            bool isView = false)
         {
             statement.Comment("Queries and outputs the results.", "Optionally including, paging, sorting, filtering and grouping.");
-            BuildSelectStatement(statement, paramBuilder, requestParams, functionSchema, functionName, functionArguments);
+            BuildSelectStatement(statement, paramBuilder, requestParams, functionSchema, functionName, functionArguments, isView: isView);
             if (requestParams.RequireTotalCount)
             {
                 statement.Comment("Calculates the total row count.", "Optionally including filtering, but no paging or sorting.");
-                BuildSelectStatement(statement, paramBuilder, requestParams, functionSchema, functionName, functionArguments, forCount: true);
+                BuildSelectStatement(statement, paramBuilder, requestParams, functionSchema, functionName, functionArguments, forCount: true, isView);
             }
         }
 
@@ -462,7 +477,8 @@ namespace ProxyR.Middleware
             string functionSchema,
             string functionName,
             string[] functionArguments,
-            bool forCount = false)
+            bool forCount = false,
+            bool isView = false)
         {
             // Write the SELECT clause, with the output columns.
             BuildSelectClause(statement, requestParams, forCount);
@@ -470,22 +486,29 @@ namespace ProxyR.Middleware
             // Write the FROM clause.
             statement.StartNewLine("FROM");
 
-            statement.Indent(fn =>
+            if (isView)
             {
-                fn.StartNewLine($"[{functionSchema}].[{functionName}](");
-
-                if (functionArguments.Any())
+                statement.Indent(fn => fn.StartNewLine($"[{functionSchema}].[{functionName}] RESULTS"));
+            }
+            else
+            {
+                statement.Indent(fn =>
                 {
-                    fn.Indent(p => p.StartNewLine(Sql.CommaLines(functionArguments)));
-                }
+                    fn.StartNewLine($"[{functionSchema}].[{functionName}](");
 
-                fn.Literal(")");
+                    if (functionArguments.Any())
+                    {
+                        fn.Indent(p => p.StartNewLine(Sql.CommaLines(functionArguments)));
+                    }
 
-                if (!forCount)
-                {
-                    fn.Literal(" RESULTS");
-                }
-            });
+                    fn.Literal(")");
+
+                    if (!forCount)
+                    {
+                        fn.Literal(" RESULTS");
+                    }
+                });
+            }
 
             // Should we write a WHERE clause?
             if (requestParams.Filter != null && requestParams.Filter.Any())
@@ -601,7 +624,7 @@ namespace ProxyR.Middleware
 
         private void BuildWhereExpression(SqlBuilder targetExpression, JArray sourceExpression, ParameterBuilder paramBuilder, bool includeBrackets = true)
         {
-            if(sourceExpression.Count < 2)
+            if (sourceExpression.Count < 2)
             {
                 return; // Bail out.
             }

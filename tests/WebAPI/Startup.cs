@@ -73,7 +73,7 @@ namespace WebAPI
             //            authenticated => app.UseProxyR());
 
             //app.UseProxyR(options => options.BindConfiguration(Configuration.GetSection("ProxyR"))
-            //                                     .UseConnectionString(_connectionString));
+            //                                .UseConnectionString(_connectionString));
 
             app.UseProxyR();
             // start url
