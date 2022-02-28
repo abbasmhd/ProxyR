@@ -15,7 +15,7 @@ namespace WebAPI
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            _connectionString = configuration.GetConnectionString("localDb");
+            _connectionString = configuration.GetConnectionString("ProxyR");
         }
 
         public IConfiguration Configuration { get; }

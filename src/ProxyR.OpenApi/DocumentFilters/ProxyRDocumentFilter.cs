@@ -73,7 +73,6 @@ namespace ProxyR.OpenAPI.DocumentFilters
                 var pathPart = functionName.Remove(0, prefix.Length);
                 pathPart = pathPart.Remove(prefix.Length - suffix.Length, suffix.Length);
 
-
                 // ProxyR endpoinmt Path/URI.
                 var pathName = pathPart.Replace('_', '/').Trim('/').ToLowerInvariant();
                 if (proxyROptions.IncludeSchemaInPath)

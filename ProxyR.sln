@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31717.71
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Database", "tests\Database\Database.sqlproj", "{58263C6E-C901-46A4-B217-B894FA10D64C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyR.Core", "src\ProxyR.Core\ProxyR.Core.csproj", "{9A6B67E2-2B73-4C39-BDE2-79D6074A41DC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyR.Middleware", "src\ProxyR.Middleware\ProxyR.Middleware.csproj", "{8C887FFB-4789-4F71-A454-654FDF20E350}"
@@ -21,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmark", "tests\Benchmar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyR.Core.Tests", "ProxyR.Core.Tests\ProxyR.Core.Tests.csproj", "{DEAA2C2D-35DB-48B6-89D8-357DB8C0857A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyR.OpenAPI", "src\ProxyR.OpenApi\ProxyR.OpenAPI.csproj", "{3210E88B-7BCA-4DF8-A4D4-5CA015C9C13D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyR.OpenAPI", "src\ProxyR.OpenApi\ProxyR.OpenAPI.csproj", "{3210E88B-7BCA-4DF8-A4D4-5CA015C9C13D}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Database", "tests\Database\Database.sqlproj", "{58263C6E-C901-46A4-B217-B894FA10D64C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,12 +29,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{58263C6E-C901-46A4-B217-B894FA10D64C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{58263C6E-C901-46A4-B217-B894FA10D64C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{58263C6E-C901-46A4-B217-B894FA10D64C}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{58263C6E-C901-46A4-B217-B894FA10D64C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{58263C6E-C901-46A4-B217-B894FA10D64C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{58263C6E-C901-46A4-B217-B894FA10D64C}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{9A6B67E2-2B73-4C39-BDE2-79D6074A41DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9A6B67E2-2B73-4C39-BDE2-79D6074A41DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A6B67E2-2B73-4C39-BDE2-79D6074A41DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -63,12 +57,17 @@ Global
 		{3210E88B-7BCA-4DF8-A4D4-5CA015C9C13D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3210E88B-7BCA-4DF8-A4D4-5CA015C9C13D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3210E88B-7BCA-4DF8-A4D4-5CA015C9C13D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58263C6E-C901-46A4-B217-B894FA10D64C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58263C6E-C901-46A4-B217-B894FA10D64C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58263C6E-C901-46A4-B217-B894FA10D64C}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{58263C6E-C901-46A4-B217-B894FA10D64C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58263C6E-C901-46A4-B217-B894FA10D64C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58263C6E-C901-46A4-B217-B894FA10D64C}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{58263C6E-C901-46A4-B217-B894FA10D64C} = {65565833-53A7-4D07-9B9B-D0417A2BC396}
 		{9A6B67E2-2B73-4C39-BDE2-79D6074A41DC} = {82BE4DFA-989C-4B1D-AACD-6E6F725C2760}
 		{8C887FFB-4789-4F71-A454-654FDF20E350} = {82BE4DFA-989C-4B1D-AACD-6E6F725C2760}
 		{D9FB167C-D2CF-495D-8B04-C626A3DD5F4D} = {82BE4DFA-989C-4B1D-AACD-6E6F725C2760}
@@ -76,6 +75,7 @@ Global
 		{FA0ECA44-461F-4125-8594-53CA1E523B8C} = {65565833-53A7-4D07-9B9B-D0417A2BC396}
 		{DEAA2C2D-35DB-48B6-89D8-357DB8C0857A} = {65565833-53A7-4D07-9B9B-D0417A2BC396}
 		{3210E88B-7BCA-4DF8-A4D4-5CA015C9C13D} = {82BE4DFA-989C-4B1D-AACD-6E6F725C2760}
+		{58263C6E-C901-46A4-B217-B894FA10D64C} = {65565833-53A7-4D07-9B9B-D0417A2BC396}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {46095EA3-5FE7-4D66-9499-F63D42E8970B}
