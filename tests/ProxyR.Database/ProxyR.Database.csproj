@@ -1,0 +1,22 @@
+<Project Sdk="MSBuild.Sdk.SqlProj/2.0.0">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <SqlServerVersion>Sql150</SqlServerVersion>
+        <!-- For additional properties that can be set here, please refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#model-properties -->
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- Refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#publishing-support for supported publishing options -->
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Remove="dbo\Tables\Role.sql" />
+      <None Remove="dbo\Tables\User.sql" />
+      <None Remove="dbo\Tables\UserRole.sql" />
+      <None Remove="ProxyR\Functions\Api_Roles_Grid.sql" />
+      <None Remove="ProxyR\Functions\Api_Users_Grid.sql" />
+      <None Remove="ProxyR\Views\Api_Users_View.sql" />
+      <None Remove="Security\Permissions.sql" />
+      <None Remove="Security\ProxyR.sql" />
+    </ItemGroup>
+</Project>
