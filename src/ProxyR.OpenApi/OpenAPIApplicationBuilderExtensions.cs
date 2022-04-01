@@ -12,9 +12,7 @@ namespace Microsoft.AspNetCore.Builder
         /// Generates the Open-API documentation JSON if the endpoint is requested.
         /// By default, the end-point is "docs.json".
         /// </summary>
-        public static IApplicationBuilder UseOpenApiDocumentation(
-            this IApplicationBuilder pipeline,
-            Action<OpenAPIOptionsBuilder>? optionsFunc = null)
+        public static IApplicationBuilder UseOpenApiDocumentation(this IApplicationBuilder pipeline, Action<OpenAPIOptionsBuilder>? optionsFunc = null)
         {
             OpenAPIOptions openApiOptions;
 
@@ -36,7 +34,8 @@ namespace Microsoft.AspNetCore.Builder
                 jsonPath = "{documentName}.json";
             }
 
-            pipeline.UseSwagger(options => {
+            pipeline.UseSwagger(options =>
+            {
                 options.RouteTemplate = jsonPath;
             });
 
@@ -59,7 +58,7 @@ namespace Microsoft.AspNetCore.Builder
                 openApiOptions = builder.Options;
             }
             else
-            { 
+            {
                 var openApiOptionsService = pipeline.ApplicationServices.GetRequiredService<IOptions<OpenAPIOptions>>();
                 openApiOptions = openApiOptionsService.Value;
             }
@@ -78,7 +77,8 @@ namespace Microsoft.AspNetCore.Builder
                 uiPath = "docs";
             }
 
-            pipeline.UseSwaggerUI(options => {
+            pipeline.UseSwaggerUI(options =>
+            {
                 options.DocumentTitle = openApiOptions.ApiName;
                 options.RoutePrefix = uiPath;
                 options.SwaggerEndpoint(jsonPath, openApiOptions.ApiName);

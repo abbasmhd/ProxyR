@@ -10,9 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds the Open-API documentation services, implemented by Swagger.
         /// </summary>
-        public static IServiceCollection AddOpenApi(
-            this IServiceCollection services,
-            Action<OpenAPIOptionsBuilder> optionsFunc)
+        public static IServiceCollection AddOpenApi(this IServiceCollection services, Action<OpenAPIOptionsBuilder> optionsFunc)
         {
             OpenAPIOptions openApiOptions;
 
@@ -27,7 +25,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 ?? openApiOptions.ApiVersion
                 ?? "docs";
 
-            services.AddSwaggerGen(options => {
+            services.AddSwaggerGen(options =>
+            {
                 options.SwaggerDoc(documentName, new OpenApiInfo
                 {
                     Title = openApiOptions.ApiName,
@@ -54,7 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                     options.AddSecurityRequirement(security);
                 }
-                               
+
                 if (openApiOptions.IncludeXmlFile)
                 {
                     var xmlFile = openApiOptions.XmlFileName ?? $"{Assembly.GetEntryAssembly()?.GetName().Name}.xml";
@@ -64,7 +63,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 if (openApiOptions.DocumentFilters.Any())
                 {
-                    options.DocumentFilterDescriptors.AddRange(openApiOptions.DocumentFilters.Select(x => new FilterDescriptor {
+                    options.DocumentFilterDescriptors.AddRange(openApiOptions.DocumentFilters.Select(x => new FilterDescriptor
+                    {
                         Type = x.Type,
                         Arguments = x.Arguments
                     }));

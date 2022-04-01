@@ -5,6 +5,7 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ProxyR.Abstractions.Builder
@@ -17,7 +18,7 @@ namespace ProxyR.Abstractions.Builder
         ///     replacing characters with '_' that can be used as an SQL injection attack.
         /// </summary>
         public static string Sanitize(string identifier) => Regex.Replace(identifier.Trim(), "[^A-Za-z0-9_]", "_");
-
+        
         public static string ColumnReferences(params string[] names) => String.Join(", ", names.Select(name => $"[{name}]"));
 
         public static string ColumnLines(params string[] names) => String.Join("\n, ", names.Select(name => $"[{name}]"));
@@ -44,7 +45,6 @@ namespace ProxyR.Abstractions.Builder
 
         public static string ParenthesisLines(params string[] contents) => String.Join("\n, ", contents.Select(r => $"({r})"));
 
-        //public static string Values(IEnumerable<object> values) => string.Join(", ", values.Select(Quote));
         public static string Values(IEnumerable<object> values) => String.Join(", ", values.SelectQuoted());
 
         public static string Values(params object[] values) => Values((IEnumerable<object>)values);
