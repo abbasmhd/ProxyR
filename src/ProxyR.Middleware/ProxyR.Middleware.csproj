@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +15,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ProxyR.Abstractions\ProxyR.Abstractions.csproj" />
-  </ItemGroup>
+    <ProjectReference Include="..\ProxyR.Abstractions\ProxyR.Abstractions.csproj">
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <IncludeAssets>ProxyR.Abstractions.dll</IncludeAssets>
+    </ProjectReference>
 
+    <ProjectReference Include="..\ProxyR.Core\ProxyR.Core.csproj">
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <IncludeAssets>ProxyR.Core.dll</IncludeAssets>
+    </ProjectReference>
+    
+  </ItemGroup>
+  <Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))"/>
+    </ItemGroup>
+  </Target>
 </Project>
