@@ -46,7 +46,7 @@ namespace ProxyR.Middleware.Helpers
       bool isView = false)
     {
       statement.Comment("Queries and outputs the results.", "Optionally including, paging, sorting, filtering and grouping.");
-      BuildSelectStatement(statement, paramBuilder, requestParams, schema, name, arguments, isView: isView);
+      BuildSelectStatement(statement, paramBuilder, requestParams, schema, name, arguments, isView);
       if (requestParams.ShowTotal)
       {
         statement.Comment("Calculates the total row count.", "Optionally including filtering, but no paging or sorting.");
@@ -121,7 +121,7 @@ namespace ProxyR.Middleware.Helpers
       }
 
       // Should we do a GROUP BY clause?
-      if (requestParams.Grouping.Count > 0)
+      if (!includeCount && requestParams.Grouping.Count > 0)
       {
         var groupColumns = requestParams.Grouping
                                         .Select(x => Sql.Sanitize(x.ColumnName))
