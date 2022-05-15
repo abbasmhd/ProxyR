@@ -200,6 +200,7 @@ namespace ProxyR.OpenAPI.DocumentFilters
                         { "403", new OpenApiResponse() { Description = "Forbidden"} },
                         { "404", new OpenApiResponse() { Description = "Not Found"} },
                         { "405", new OpenApiResponse() { Description = "Method Not Allowed"} },
+                        { "500", new OpenApiResponse() { Description = "Internal Server Error"} },
                     }
                 };
 
