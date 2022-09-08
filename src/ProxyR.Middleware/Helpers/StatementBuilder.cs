@@ -46,7 +46,7 @@ namespace ProxyR.Middleware.Helpers
       bool isView = false)
     {
       statement.Comment("Queries and outputs the results.", "Optionally including, paging, sorting, filtering and grouping.");
-      BuildSelectStatement(statement, paramBuilder, requestParams, schema, name, arguments, isView);
+      BuildSelectStatement(statement, paramBuilder, requestParams, schema, name, arguments, isView: isView);
       if (requestParams.ShowTotal)
       {
         statement.Comment("Calculates the total row count.", "Optionally including filtering, but no paging or sorting.");
