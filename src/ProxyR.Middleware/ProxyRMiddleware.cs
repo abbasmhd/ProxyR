@@ -141,8 +141,8 @@ namespace ProxyR.Middleware
       {
         // Get all the parameter names currently on the function.
         functionParamNames = await DbCommands
-                                    .GetParameterNames(connectionString, functionName, functionSchema)
-                                    .ToScalarArrayAsync<string>();
+          .GetParameterNames(connectionString, functionName, functionSchema)
+          .ToScalarArrayAsync<string>();
 
         // var matchedParams = requestParams
         functionArguments = from functionParamName in functionParamNames

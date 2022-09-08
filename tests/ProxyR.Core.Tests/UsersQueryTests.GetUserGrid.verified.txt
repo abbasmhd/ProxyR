@@ -1,0 +1,61 @@
+﻿{
+  response: {
+    Version: 1.1,
+    Content: {
+      Headers: [
+        {
+          Key: Content-Type,
+          Value: [
+            application/json
+          ]
+        }
+      ]
+    },
+    StatusCode: OK,
+    ReasonPhrase: OK,
+    Headers: [
+      {
+        Key: Transfer-Encoding,
+        Value: [
+          chunked
+        ]
+      },
+      {
+        Key: Server,
+        Value: [
+          Microsoft-IIS/10.0
+        ]
+      },
+      {
+        Key: X-Powered-By,
+        Value: [
+          ASP.NET
+        ]
+      },
+      {
+        Key: Date,
+        Value: [
+          NoMoreLineE
+        ]
+      }
+    ],
+    TrailingHeaders: [],
+    RequestMessage: {
+      Version: 1.1,
+      Method: {
+        Method: GET
+      },
+      RequestUri: 'https://localhost:44368/users/grid?$take=2&$skip=1&$select=firstname,lastname&$filter=lastname%20contains%20%27pear%27',
+      Headers: [
+        {
+          Key: Accept,
+          Value: [
+            application/json
+          ]
+        }
+      ]
+    },
+    IsSuccessStatusCode: true
+  },
+  res: {"results":[{"firstname":"Guthry","lastname":"Spearing"},{"firstname":"Terri","lastname":"Shakspeare"}]}
+}
