@@ -15,8 +15,3 @@ RETURNS TABLE AS RETURN
       JOIN [dbo].[Role] r ON r.[RoleId] = ur.[RoleId]
      WHERE u.[IsDeleted] = 0
 )
-
-GO
-GRANT SELECT
-    ON OBJECT::[ProxyR].[Api_Users_Grid] TO [ProxyR]
-    AS [dbo];
