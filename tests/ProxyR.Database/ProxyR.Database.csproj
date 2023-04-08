@@ -1,22 +1,52 @@
-<Project Sdk="MSBuild.Sdk.SqlProj/2.0.0">
-    <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
-        <SqlServerVersion>Sql150</SqlServerVersion>
-        <!-- For additional properties that can be set here, please refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#model-properties -->
-    </PropertyGroup>
+<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <!-- Refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#publishing-support for supported publishing options -->
-    </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
 
-    <ItemGroup>
-      <None Remove="dbo\Tables\Role.sql" />
-      <None Remove="dbo\Tables\User.sql" />
-      <None Remove="dbo\Tables\UserRole.sql" />
-      <None Remove="ProxyR\Functions\Api_Roles_Grid.sql" />
-      <None Remove="ProxyR\Functions\Api_Users_Grid.sql" />
-      <None Remove="ProxyR\Views\Api_Users_View.sql" />
-      <None Remove="Security\Permissions.sql" />
-      <None Remove="Security\ProxyR.sql" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentMigrator" Version="3.3.2" />
+    <PackageReference Include="FluentMigrator.Extensions.SqlServer" Version="3.3.2" />
+    <PackageReference Include="FluentMigrator.Runner" Version="3.3.2" />
+    <PackageReference Include="FluentMigrator.Runner.SqlServer" Version="3.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Scripts\Data\RolesData.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Data\UserRoleData.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Data\UsersData.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Dbo\Tables\Role.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Dbo\Tables\User.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Dbo\Tables\UserRole.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\ProxyR\Functions\Api_Roles_Grid.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\ProxyR\Functions\Api_Users_Grid.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\ProxyR\Views\Api_Users_View.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Security\Permissions.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Security\ProxyR.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
