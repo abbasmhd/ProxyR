@@ -61,7 +61,7 @@ namespace ProxyR.Abstractions.Commands
         public static async Task CreateNonExistingColumnsAsync(string connectionString, DataTable dataTable, string tableName)
         {
             // Add columns that do not exist.
-            var columnNameTable = await GetColumns(connectionString, tableName).ToDataTableAsync();
+            var columnNameTable = await GetColumns(connectionString, tableName).ToDataTableAsync().ConfigureAwait(false);
             var columnNames = columnNameTable
                 .Rows
                 .Cast<DataRow>()
@@ -82,7 +82,7 @@ namespace ProxyR.Abstractions.Commands
                     continue;
                 }
 
-                await CreateTableColumn(connectionString, tableName, fieldName: column.ColumnName, typeSyntax).ExecuteAsync();
+                await CreateTableColumn(connectionString, tableName, fieldName: column.ColumnName, typeSyntax).ExecuteAsync().ConfigureAwait(false);
             }
         }
     }

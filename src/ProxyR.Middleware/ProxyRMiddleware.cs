@@ -44,18 +44,18 @@ namespace ProxyR.Middleware
 
     public async Task Invoke(HttpContext context)
     {
-      // Get the request body, 
+      // Get the request body,
       // if one has been passed.
       string requestBody = null;
 
       if (context.Request.Body != null)
       {
-        var (stream, text) = await StreamUtility.ReadAsStringAsync(context.Request.Body);
+        var (stream, text) = await StreamUtility.ReadAsStringAsync(context.Request.Body).ConfigureAwait(false);
         context.Request.Body = stream;
         requestBody = text ?? "{}";
       }
 
-      // Get the connection-string from the options, or the connection-string 
+      // Get the connection-string from the options, or the connection-string
       // from the configuration based on the connection-string name given in the options.
       var connectionString = _options.Value?.ConnectionString;
 
@@ -76,7 +76,7 @@ namespace ProxyR.Middleware
       // Does this pass the minimum segments?
       if (_options.Value?.IncludeSchemaInPath == true && segments.Length < 2 || _options.Value?.IncludeSchemaInPath == false && segments.Length < 1)
       {
-        await _next(context);
+        await _next(context).ConfigureAwait(false);
 
         return;
       }
@@ -90,11 +90,12 @@ namespace ProxyR.Middleware
                                            DbObjectType.TableValuedFunction,
                                            DbObjectType.InlineTableValuedFunction,
                                            DbObjectType.View)
-                            .ToScalarAsync<string>();
+                            .ToScalarAsync<string>()
+                            .ConfigureAwait(false);
 
       if (String.IsNullOrWhiteSpace(objectType))
       {
-        await _next(context);
+        await _next(context).ConfigureAwait(false);
         return;
       }
 
@@ -142,7 +143,8 @@ namespace ProxyR.Middleware
         // Get all the parameter names currently on the function.
         functionParamNames = await DbCommands
           .GetParameterNames(connectionString, functionName, functionSchema)
-          .ToScalarArrayAsync<string>();
+          .ToScalarArrayAsync<string>()
+          .ConfigureAwait(false);
 
         // var matchedParams = requestParams
         functionArguments = from functionParamName in functionParamNames
@@ -154,7 +156,7 @@ namespace ProxyR.Middleware
                             select paramArgument;
       }
 
-      // Check for required parameters.     
+      // Check for required parameters.
       foreach (var requiredParameterName in _options.Value.RequiredParameterNames)
       {
         if (functionParamNames.Contains(requiredParameterName, StringComparer.InvariantCultureIgnoreCase)
@@ -166,7 +168,7 @@ namespace ProxyR.Middleware
         _logger.LogWarning($"DbFunction [{functionSchema}].[{functionName}] did not have required parameter {requiredParameterName} provided.");
 
         context.Response.StatusCode = 404;
-        await _next(context);
+        await _next(context).ConfigureAwait(false);
 
         return;
       }
@@ -181,7 +183,9 @@ namespace ProxyR.Middleware
       _logger.LogInformation($"SQL Generated:\n{sql}");
 
       // Run the SQL.
-      var results = await Db.Query(connectionString: connectionString, sql: sql, parameters: paramBuilder.Parameters.Values.ToArray()).ToJDataSetAsync();
+      var results = await Db.Query(connectionString: connectionString, sql: sql, parameters: paramBuilder.Parameters.Values.ToArray())
+                            .ToJDataSetAsync()
+                            .ConfigureAwait(false);
 
       if (results.Property("results") == null)
       {
@@ -192,7 +196,7 @@ namespace ProxyR.Middleware
 
       // Output the SQL to the response.
       context.Response.ContentType = "application/json";
-      await context.Response.WriteAsync(json);
+      await context.Response.WriteAsync(json).ConfigureAwait(false);
     }
 
   }
