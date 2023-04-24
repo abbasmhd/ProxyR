@@ -8,6 +8,7 @@ namespace ProxyR.Core.Tests
 
         private const string baseUrl = "https://localhost:44368/";
 
+        [Ignore]
         [TestMethod]
         public async Task GetUserGrid()
         {
