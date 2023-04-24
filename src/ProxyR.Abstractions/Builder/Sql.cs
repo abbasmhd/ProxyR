@@ -5,7 +5,6 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ProxyR.Abstractions.Builder
@@ -29,16 +28,12 @@ namespace ProxyR.Abstractions.Builder
         {
             var parts = SplitIdentifierParts(identifier);
 
-            switch (parts.Length)
+            return parts.Length switch
             {
-                case 1:
-                    return ("dbo", parts[0]);
-                case 2:
-                    return (parts[0], parts[1]);
-                default:
-                    throw new InvalidOperationException($"The given SQL identifier [{identifier}] cannot be split.");
-            }
-
+                1 => ("dbo", parts[0]),
+                2 => (parts[0], parts[1]),
+                _ => throw new InvalidOperationException($"The given SQL identifier [{identifier}] cannot be split."),
+            };
         }
 
         public static object[] GetPropertyValues(object obj, IEnumerable<PropertyInfo> properties) => properties.Select(p => p.GetValue(obj)).ToArray();
@@ -98,36 +93,17 @@ namespace ProxyR.Abstractions.Builder
         {
             if (value is JValue jValue)
             {
-                switch (jValue.Type)
+                value = jValue.Type switch
                 {
-                    case JTokenType.Bytes:
-                        value = (byte[])jValue;
-                        break;
-                    case JTokenType.Integer:
-                        value = int.Parse(jValue.ToString(CultureInfo.InvariantCulture));
-                        break;
-                    case JTokenType.Float:
-                        value = float.Parse(jValue.ToString(CultureInfo.InvariantCulture));
-                        break;
-                    case JTokenType.Boolean:
-                        value = bool.Parse(jValue.ToString(CultureInfo.InvariantCulture));
-                        break;
-                    case JTokenType.Null:
-                    case JTokenType.Undefined:
-                        value = null;
-                        break;
-                    case JTokenType.Date:
-                        value = DateTime.Parse(jValue.ToString(CultureInfo.InvariantCulture));
-                        break;
-                    case JTokenType.String:
-                    case JTokenType.TimeSpan:
-                    case JTokenType.Guid:
-                    case JTokenType.Uri:
-                        value = jValue.ToString(CultureInfo.InvariantCulture);
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unknown JTokenType [{value}].");
-                }
+                    JTokenType.Bytes => (byte[])jValue,
+                    JTokenType.Integer => int.Parse(jValue.ToString(CultureInfo.InvariantCulture)),
+                    JTokenType.Float => float.Parse(jValue.ToString(CultureInfo.InvariantCulture)),
+                    JTokenType.Boolean => bool.Parse(jValue.ToString(CultureInfo.InvariantCulture)),
+                    JTokenType.Null or JTokenType.Undefined => null,
+                    JTokenType.Date => DateTime.Parse(jValue.ToString(CultureInfo.InvariantCulture)),
+                    JTokenType.String or JTokenType.TimeSpan or JTokenType.Guid or JTokenType.Uri => jValue.ToString(CultureInfo.InvariantCulture),
+                    _ => throw new InvalidOperationException($"Unknown JTokenType [{value}]."),
+                };
             }
 
             if (value == null || value == DBNull.Value)
@@ -135,21 +111,15 @@ namespace ProxyR.Abstractions.Builder
                 return "NULL";
             }
 
-            switch (value)
+            return value switch
             {
-                case string stringValue:
-                    return $"'{stringValue.Replace("'", "''")}'";
-                case DateTime dateTime:
-                    return $"'{dateTime:yyyy-MM-dd HH:mm:ss.fff}'";
-                case bool isTrue:
-                    return isTrue ? "1" : "0";
-                case Guid guid:
-                    return $"'{guid}'";
-                case byte[] bytes:
-                    return $"CONVERT(VARBINARY(MAX), '0x{BytesToHex(bytes)}', 1)";
-                default:
-                    return value.ToString();
-            }
+                string stringValue  => $"'{stringValue.Replace("'", "''")}'",
+                DateTime dateTime   => $"'{dateTime:yyyy-MM-dd HH:mm:ss.fff}'",
+                bool isTrue         => isTrue ? "1" : "0",
+                Guid guid           => $"'{guid}'",
+                byte[] bytes        => $"CONVERT(VARBINARY(MAX), '0x{BytesToHex(bytes)}', 1)",
+                _                   => value.ToString(),
+            };
         }
 
         /// <summary>

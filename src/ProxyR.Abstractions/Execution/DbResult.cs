@@ -64,7 +64,7 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public async Task<TEntity> FirstOrDefaultAsync<TEntity>() where TEntity : class, new()
         {
-            var result = await GetAllEntitiesAsync<TEntity>();
+            var result = await GetAllEntitiesAsync<TEntity>().ConfigureAwait(false);
             return result.FirstOrDefault();
         }
 
@@ -84,7 +84,7 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public async Task<TEntity> FirstOrDefaultAsync<TEntity>(Func<TEntity, bool> predicate) where TEntity : class, new()
         {
-            var result = await GetAllEntitiesAsync<TEntity>();
+            var result = await GetAllEntitiesAsync<TEntity>().ConfigureAwait(false);
             return result.FirstOrDefault(predicate);
         }
 
@@ -102,7 +102,7 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public async Task<List<TEntity>> ToListAsync<TEntity>() where TEntity : class, new()
         {
-            var results = await GetAllEntitiesAsync<TEntity>();
+            var results = await GetAllEntitiesAsync<TEntity>().ConfigureAwait(false);
             return results.ToList();
         }
 
@@ -120,7 +120,7 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public async Task<TEntity[]> ToArrayAsync<TEntity>() where TEntity : class, new()
         {
-            var results = await GetAllEntitiesAsync<TEntity>();
+            var results = await GetAllEntitiesAsync<TEntity>().ConfigureAwait(false);
             return results.ToArray();
         }
 
@@ -162,7 +162,7 @@ namespace ProxyR.Abstractions.Execution
         private async Task<IEnumerable<TEntity>> GetAllEntitiesAsync<TEntity>() where TEntity : class, new()
         {
             // Select the results into a DataTable.
-            var table = await ToDataTableAsync();
+            var table = await ToDataTableAsync().ConfigureAwait(false);
 
             // Create the map now, so that we
             var map = DbEntityMap.GetOrCreate<TEntity>();
@@ -195,11 +195,11 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public async Task<int> ExecuteAsync(DbTransaction transaction = null)
         {
-            using (var commandFactoryResult = await _commandFactory())
+            using (var commandFactoryResult = await _commandFactory().ConfigureAwait(false))
             {
                 var command = commandFactoryResult.Command;
                 ApplyCommandSettings(commandFactoryResult, transaction);
-                var rowsAffected = await command.ExecuteNonQueryAsync();
+                var rowsAffected = await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                 return rowsAffected;
             }
         }
@@ -224,11 +224,11 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public async Task<TScalar> ToScalarAsync<TScalar>()
         {
-            using (var commandFactoryResult = await _commandFactory())
+            using (var commandFactoryResult = await _commandFactory().ConfigureAwait(false))
             {
                 var command = commandFactoryResult.Command;
                 ApplyCommandSettings(commandFactoryResult);
-                var value = await command.ExecuteScalarAsync();
+                var value = await command.ExecuteScalarAsync().ConfigureAwait(false);
                 var convertedValue = (TScalar)ConversionUtility.Convert(value, typeof(TScalar));
                 return convertedValue;
             }
@@ -239,7 +239,7 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public async Task<TScalar[]> ToScalarArrayAsync<TScalar>()
         {
-            var result = await ToScalarListAsync<TScalar>();
+            var result = await ToScalarListAsync<TScalar>().ConfigureAwait(false);
             return result.ToArray();
         }
 
@@ -250,14 +250,14 @@ namespace ProxyR.Abstractions.Execution
         {
             var list = new List<TScalar>();
 
-            using (var commandFactoryResult = await _commandFactory())
+            using (var commandFactoryResult = await _commandFactory().ConfigureAwait(false))
             {
                 var command = commandFactoryResult.Command;
                 ApplyCommandSettings(commandFactoryResult);
 
-                using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                 {
-                    while (await reader.ReadAsync())
+                    while (await reader.ReadAsync().ConfigureAwait(false))
                     {
                         var value = reader[0];
                         var convertedValue = (TScalar)Convert.ChangeType(value, typeof(TScalar));
@@ -314,11 +314,11 @@ namespace ProxyR.Abstractions.Execution
         /// <returns></returns>
         public async Task<DbDataReader> ToDataReaderAsync(bool closeConnection = true)
         {
-            var commandFactoryResult = await _commandFactory();
+            var commandFactoryResult = await _commandFactory().ConfigureAwait(false);
             var command = commandFactoryResult.Command;
             ApplyCommandSettings(commandFactoryResult);
 
-            var reader = await command.ExecuteReaderAsync(closeConnection ? CommandBehavior.CloseConnection : CommandBehavior.Default);
+            var reader = await command.ExecuteReaderAsync(closeConnection ? CommandBehavior.CloseConnection : CommandBehavior.Default).ConfigureAwait(false);
             return reader;
         }
 
@@ -345,7 +345,7 @@ namespace ProxyR.Abstractions.Execution
         public async Task<DataTable> ToDataTableAsync(bool closeConnection = true, DbTransaction transaction = null)
         {
             // Read the first table only.
-            var dataSet = await ToDataSetAsync(1, closeConnection, transaction);
+            var dataSet = await ToDataSetAsync(1, closeConnection, transaction).ConfigureAwait(false);
             if (dataSet.Tables.Count < 1)
             {
                 throw new InvalidOperationException("No result-sets were read, no data-table to return.");
@@ -403,19 +403,19 @@ namespace ProxyR.Abstractions.Execution
         /// </summary>
         public async Task<DataSet> ToDataSetAsync(int? maxTables = null, bool closeConnection = true, DbTransaction transaction = null)
         {
-            using (var commandFactoryResult = await _commandFactory())
+            using (var commandFactoryResult = await _commandFactory().ConfigureAwait(false))
             {
                 var command = commandFactoryResult.Command;
                 ApplyCommandSettings(commandFactoryResult, transaction);
 
-                using (var reader = await command.ExecuteReaderAsync(closeConnection ? CommandBehavior.CloseConnection : CommandBehavior.Default))
+                using (var reader = await command.ExecuteReaderAsync(closeConnection ? CommandBehavior.CloseConnection : CommandBehavior.Default).ConfigureAwait(false))
                 {
                     var dataSet = new DataSet();
 
                     // Iterate throuhg every result-set.
                     do
                     {
-                        var table = await ReadDataTableAsync(reader);
+                        var table = await ReadDataTableAsync(reader).ConfigureAwait(false);
                         if (table == null)
                         {
                             break;
@@ -430,7 +430,7 @@ namespace ProxyR.Abstractions.Execution
                         }
 
                     }
-                    while (await reader.NextResultAsync());
+                    while (await reader.NextResultAsync().ConfigureAwait(false));
 
                     return dataSet;
                 }
@@ -452,7 +452,7 @@ namespace ProxyR.Abstractions.Execution
             }
 
             // Read each row into the table.
-            while (await reader.ReadAsync())
+            while (await reader.ReadAsync().ConfigureAwait(false))
             {
 
                 // Have we set the column-types yet?
@@ -528,7 +528,7 @@ namespace ProxyR.Abstractions.Execution
         }
 
         /// <summary>
-        /// Creates columns inside a DataTable, from a DataReader's SchemaTable, 
+        /// Creates columns inside a DataTable, from a DataReader's SchemaTable,
         /// this can be read with or without rows existing.
         /// </summary>
         private static bool CreateTableColumns(DbDataReader reader, DataTable table)

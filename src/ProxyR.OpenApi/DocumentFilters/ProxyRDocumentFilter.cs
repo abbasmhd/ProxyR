@@ -15,15 +15,15 @@ namespace ProxyR.OpenAPI.DocumentFilters
 
         class ProxyRParameter
         {
-            public string Name { get; set; }
-            public string Type { get; set; }
+            public string? Name { get; set; }
+            public string? Type { get; set; }
             public int? MaxLength { get; set; }
         }
 
         class ProxyRColumn
         {
-            public string Name { get; set; }
-            public string Type { get; set; }
+            public string? Name { get; set; }
+            public string? Type { get; set; }
             public int? MaxLength { get; set; }
 
         }
@@ -83,18 +83,18 @@ namespace ProxyR.OpenAPI.DocumentFilters
                 var dbParameters = parameterQuery.ToArray<ProxyRParameter>();
 
                 var pathParameters = dbParameters
-                    .Where(x => !excludedParameters.Contains(x.Name.TrimStart('@'), StringComparer.InvariantCultureIgnoreCase))
+                    .Where(x => !excludedParameters.Contains(x.Name?.TrimStart('@'), StringComparer.InvariantCultureIgnoreCase))
                     .Select(x => new OpenApiParameter
                     {
 
-                        Name = x.Name.TrimStart('@').ToCamelCase(),
+                        Name = x.Name?.TrimStart('@').ToCamelCase(),
                         In = ParameterLocation.Query,
                         //Required = true // TODO check is_nullable
                         Schema = new OpenApiSchema()
                         {
                             Type = DbTypes.ToJsType(x.Type),
-                            Title = x.Name.TrimStart('@').ToCamelCase(),
-                            Description = "Description " + x.Name.TrimStart('@').ToCamelCase(),
+                            Title = x.Name?.TrimStart('@').ToCamelCase(),
+                            Description = "Description " + x.Name?.TrimStart('@').ToCamelCase(),
                             MaxLength = x.MaxLength
                         }
                     })
@@ -140,7 +140,7 @@ namespace ProxyR.OpenAPI.DocumentFilters
                             Schema: new OpenApiSchema()
                             {
                                 Type = DbTypes.ToJsType(x.Type),
-                                Title = x.Name.TrimStart('@').ToCamelCase(),
+                                Title = x.Name?.TrimStart('@').ToCamelCase(),
                                 MaxLength = x.MaxLength
                             })
                         )

@@ -15,15 +15,15 @@ namespace Microsoft.Extensions.DependencyInjection
             OpenAPIOptions openApiOptions;
 
             if (optionsFunc == null)
+            {
                 throw new ArgumentNullException(nameof(optionsFunc));
+            }
 
             var builder = new OpenAPIOptionsBuilder();
             optionsFunc.Invoke(builder);
             openApiOptions = builder.Options;
 
-            var documentName = openApiOptions.DocumentName
-                ?? openApiOptions.ApiVersion
-                ?? "docs";
+            var documentName = openApiOptions.DocumentName ?? openApiOptions.ApiVersion ?? "docs";
 
             services.AddSwaggerGen(options =>
             {
