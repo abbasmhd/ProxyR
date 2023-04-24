@@ -35,7 +35,7 @@ namespace ProxyR.Core.Tests
                 var currentYear = DateTime.Now.Year.ToString();
                 if (line.Contains(currentYear))
                 {
-                    return "NoMoreLine";
+                    return "2022-02-02"; // Twosday.
                 }
 
                 return line;
