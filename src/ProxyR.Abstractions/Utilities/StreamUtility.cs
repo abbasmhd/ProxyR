@@ -27,7 +27,7 @@ namespace ProxyR.Abstractions.Utilities
             // Create a memory-stream to buffer the request.
             using (var memoryStream = new MemoryStream())
             {
-                await stream.CopyToAsync(memoryStream);
+                await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
                 try
                 {
@@ -35,7 +35,7 @@ namespace ProxyR.Abstractions.Utilities
                     memoryStream.Seek(0, SeekOrigin.Begin);
                     using (var reader = new StreamReader(stream: memoryStream, encoding: Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 4096, leaveOpen: true))
                     {
-                        text = await reader.ReadToEndAsync();
+                        text = await reader.ReadToEndAsync().ConfigureAwait(false);
                     }
 
                     // Translate an empty body to a NULL.

@@ -42,22 +42,22 @@ namespace ProxyR.Middleware
             _runtimeOptions = runtimeOptions;
         }
 
-        public async Task Invoke(HttpContext context)
-        {
-            // Get the request body, 
-            // if one has been passed.
-            string requestBody = null;
+    public async Task Invoke(HttpContext context)
+    {
+      // Get the request body,
+      // if one has been passed.
+      string requestBody = null;
 
-            if (context.Request.Body != null)
-            {
-                var (stream, text) = await StreamUtility.ReadAsStringAsync(context.Request.Body);
-                context.Request.Body = stream;
-                requestBody = text ?? "{}";
-            }
+      if (context.Request.Body != null)
+      {
+        var (stream, text) = await StreamUtility.ReadAsStringAsync(context.Request.Body).ConfigureAwait(false);
+        context.Request.Body = stream;
+        requestBody = text ?? "{}";
+      }
 
-            // Get the connection-string from the options, or the connection-string 
-            // from the configuration based on the connection-string name given in the options.
-            var connectionString = _options.Value?.ConnectionString;
+      // Get the connection-string from the options, or the connection-string
+      // from the configuration based on the connection-string name given in the options.
+      var connectionString = _options.Value?.ConnectionString;
 
             if (connectionString.IsNullOrWhiteSpace() && !String.IsNullOrWhiteSpace(_options.Value?.ConnectionStringName))
             {
@@ -73,10 +73,10 @@ namespace ProxyR.Middleware
             var path = context.Request.Path.ToString();
             var segments = path.TrimStart('/').Split('/');
 
-            // Does this pass the minimum segments?
-            if (_options.Value?.IncludeSchemaInPath == true && segments.Length < 2 || _options.Value?.IncludeSchemaInPath == false && segments.Length < 1)
-            {
-                await _next(context);
+      // Does this pass the minimum segments?
+      if (_options.Value?.IncludeSchemaInPath == true && segments.Length < 2 || _options.Value?.IncludeSchemaInPath == false && segments.Length < 1)
+      {
+        await _next(context).ConfigureAwait(false);
 
                 return;
             }
@@ -84,19 +84,20 @@ namespace ProxyR.Middleware
             // Resolve the function name.
             var (functionSchema, functionName) = segments.FormatProcsName(_options.Value);
 
-            // Does the object exist?
-            var objectType = await DbCommands
-                                  .GetObjectType(connectionString, functionName, functionSchema,
-                                                 DbObjectType.TableValuedFunction,
-                                                 DbObjectType.InlineTableValuedFunction,
-                                                 DbObjectType.View)
-                                  .ToScalarAsync<string>();
+      // Does the object exist?
+      var objectType = await DbCommands
+                            .GetObjectType(connectionString, functionName, functionSchema,
+                                           DbObjectType.TableValuedFunction,
+                                           DbObjectType.InlineTableValuedFunction,
+                                           DbObjectType.View)
+                            .ToScalarAsync<string>()
+                            .ConfigureAwait(false);
 
-            if (String.IsNullOrWhiteSpace(objectType))
-            {
-                await _next(context);
-                return;
-            }
+      if (String.IsNullOrWhiteSpace(objectType))
+      {
+        await _next(context).ConfigureAwait(false);
+        return;
+      }
 
             // Get it into an interrogatable JSON object (JObject).
             var queryParams = requestBody != null
@@ -131,18 +132,19 @@ namespace ProxyR.Middleware
             IEnumerable<string> functionParamNames;
             IEnumerable<string> functionArguments;
 
-            var isView = objectType.ToDbObjectType() == DbObjectType.View;
-            if (isView)
-            {
-                functionArguments = new List<string>();
-                functionParamNames = new List<string>();
-            }
-            else
-            {
-                // Get all the parameter names currently on the function.
-                functionParamNames = await DbCommands
-                  .GetParameterNames(connectionString, functionName, functionSchema)
-                  .ToScalarArrayAsync<string>();
+      var isView = objectType.ToDbObjectType() == DbObjectType.View;
+      if (isView)
+      {
+        functionArguments = new List<string>();
+        functionParamNames = new List<string>();
+      }
+      else
+      {
+        // Get all the parameter names currently on the function.
+        functionParamNames = await DbCommands
+          .GetParameterNames(connectionString, functionName, functionSchema)
+          .ToScalarArrayAsync<string>()
+          .ConfigureAwait(false);
 
                 // var matchedParams = requestParams
                 functionArguments = from functionParamName in functionParamNames
@@ -154,19 +156,19 @@ namespace ProxyR.Middleware
                                     select paramArgument;
             }
 
-            // Check for required parameters.
-            foreach (var requiredParameterName in _options.Value.RequiredParameterNames)
-            {
-                if (functionParamNames.Contains(requiredParameterName, StringComparer.InvariantCultureIgnoreCase)
-                    && paramValues.ContainsKey(requiredParameterName))
-                {
-                    continue;
-                }
+      // Check for required parameters.
+      foreach (var requiredParameterName in _options.Value.RequiredParameterNames)
+      {
+        if (functionParamNames.Contains(requiredParameterName, StringComparer.InvariantCultureIgnoreCase)
+            && paramValues.ContainsKey(requiredParameterName))
+        {
+          continue;
+        }
 
                 _logger.LogWarning($"DbFunction [{functionSchema}].[{functionName}] did not have required parameter {requiredParameterName} provided.");
 
-                context.Response.StatusCode = 404;
-                await _next(context);
+        context.Response.StatusCode = 404;
+        await _next(context).ConfigureAwait(false);
 
                 return;
             }
@@ -180,8 +182,10 @@ namespace ProxyR.Middleware
             _logger.LogInformation($"SQL Parameters:\n{JsonConvert.SerializeObject(paramBuilder.Parameters.Values.Select(x => new { Type = x.GetType().Name, Value = x }).ToArray())}");
             _logger.LogInformation($"SQL Generated:\n{sql}");
 
-            // Run the SQL.
-            var results = await Db.Query(connectionString: connectionString, sql: sql, parameters: paramBuilder.Parameters.Values.ToArray()).ToJDataSetAsync();
+      // Run the SQL.
+      var results = await Db.Query(connectionString: connectionString, sql: sql, parameters: paramBuilder.Parameters.Values.ToArray())
+                            .ToJDataSetAsync()
+                            .ConfigureAwait(false);
 
             if (results.Property("results") == null)
             {
@@ -190,10 +194,10 @@ namespace ProxyR.Middleware
 
             var json = results.ToString(Formatting.None);
 
-            // Output the SQL to the response.
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(json);
-        }
+      // Output the SQL to the response.
+      context.Response.ContentType = "application/json";
+      await context.Response.WriteAsync(json).ConfigureAwait(false);
+    }
 
     }
 }

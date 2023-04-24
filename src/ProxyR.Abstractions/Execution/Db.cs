@@ -66,7 +66,7 @@ namespace ProxyR.Abstractions.Execution
 
                 if (connection.State == ConnectionState.Closed)
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                 }
 
                 return new DbCommandFactoryResult
@@ -90,7 +90,7 @@ namespace ProxyR.Abstractions.Execution
             {
                 var connection = CreateConnection(connectionString);
                 var command = CreateCommand(connection, sql, parameters);
-                await connection.OpenAsync();
+                await connection.OpenAsync().ConfigureAwait(false);
 
                 return new DbCommandFactoryResult
                 {

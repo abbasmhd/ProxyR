@@ -439,7 +439,7 @@ namespace ProxyR.Abstractions.Extensions
 
         public static async Task<JObject> ToJDataSetAsync(this DbResult dbResult)
         {
-            var dataSet = await dbResult.ToDataSetAsync();
+            var dataSet = await dbResult.ToDataSetAsync().ConfigureAwait(false);
             var jDataSet = dataSet.ToJDataSet();
             return jDataSet;
         }
