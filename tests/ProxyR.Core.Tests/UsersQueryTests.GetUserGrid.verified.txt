@@ -4,8 +4,7 @@
     Content: {
       Headers: [
         {
-          Key: Content-Type,
-          Value: [
+          Content-Type: [
             application/json
           ]
         }
@@ -15,27 +14,23 @@
     ReasonPhrase: OK,
     Headers: [
       {
-        Key: Transfer-Encoding,
-        Value: [
+        Transfer-Encoding: [
           chunked
         ]
       },
       {
-        Key: Server,
-        Value: [
+        Server: [
           Microsoft-IIS/10.0
         ]
       },
       {
-        Key: X-Powered-By,
-        Value: [
+        X-Powered-By: [
           ASP.NET
         ]
       },
       {
-        Key: Date,
-        Value: [
-          NoMoreLineE
+        Date: [
+          NoMoreLine
         ]
       }
     ],
@@ -45,11 +40,10 @@
       Method: {
         Method: GET
       },
-      RequestUri: 'https://localhost:44368/users/grid?$take=2&$skip=1&$select=firstname,lastname&$filter=lastname%20contains%20%27pear%27',
+      RequestUri: https://localhost:44368/users/grid?$take=2&$skip=1&$select=firstname,lastname&$filter=lastname%20contains%20%27pear%27,
       Headers: [
         {
-          Key: Accept,
-          Value: [
+          Accept: [
             application/json
           ]
         }

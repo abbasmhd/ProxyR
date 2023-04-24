@@ -60,17 +60,13 @@ namespace ProxyR.Abstractions.Commands
 
         public static DbType FromJsType(string jsType)
         {
-            switch (jsType.ToLower())
+            return jsType.ToLower() switch
             {
-                case "string":
-                    return _types.First(x => x.DbTypeName == "NVARCHAR");
-                case "number":
-                    return _types.First(x => x.DbTypeName == "DECIMAL");
-                case "boolean":
-                    return _types.First(x => x.DbTypeName == "BIT");
-                default:
-                    return _types.First(x => x.DbTypeName == "NVARCHAR");
-            }
+                "string"  => _types.First(x => x.DbTypeName == "NVARCHAR"),
+                "number"  => _types.First(x => x.DbTypeName == "DECIMAL"),
+                "boolean" => _types.First(x => x.DbTypeName == "BIT"),
+                _         => _types.First(x => x.DbTypeName == "NVARCHAR"),
+            };
         }
 
         public static string ToJsType(string dbTypeName)
@@ -122,59 +118,26 @@ namespace ProxyR.Abstractions.Commands
             {
                 throw new Exception("sql type not found");
             }
-            switch (typeCode)
+            return typeCode switch
             {
-                case SQLType.varbinary:
-                case SQLType.binary:
-                case SQLType.filestream:
-                case SQLType.image:
-                case SQLType.rowversion:
-                case SQLType.timestamp:
-                    return "byte[]";
-                case SQLType.tinyint:
-                    return "byte";
-                case SQLType.varchar:
-                case SQLType.nvarchar:
-                case SQLType.nchar:
-                case SQLType.text:
-                case SQLType.ntext:
-                case SQLType.xml:
-                    return "string";
-                case SQLType.@char:
-                    return "char";
-                case SQLType.bigint:
-                    return "long";
-                case SQLType.bit:
-                    return "bool";
-                case SQLType.smalldatetime:
-                case SQLType.datetime:
-                case SQLType.date:
-                case SQLType.datetime2:
-                    return "DateTime";
-                case SQLType.datetimeoffset:
-                    return "DateTimeOffset";
-                case SQLType.@decimal:
-                case SQLType.money:
-                case SQLType.numeric:
-                case SQLType.smallmoney:
-                    return "decimal";
-                case SQLType.@float:
-                    return "double";
-                case SQLType.@int:
-                    return "int";
-                case SQLType.real:
-                    return "Single";
-                case SQLType.smallint:
-                    return "short";
-                case SQLType.uniqueidentifier:
-                    return "Guid";
-                case SQLType.sql_variant:
-                    return "object";
-                case SQLType.time:
-                    return "TimeSpan";
-                default:
-                    throw new Exception("none equal type");
-            }
+                SQLType.varbinary or SQLType.binary or SQLType.filestream or SQLType.image or SQLType.rowversion or SQLType.timestamp => "byte[]",
+                SQLType.tinyint          => "byte",
+                SQLType.varchar or SQLType.nvarchar or SQLType.nchar or SQLType.text or SQLType.ntext or SQLType.xml => "string",
+                SQLType.@char            => "char",
+                SQLType.bigint           => "long",
+                SQLType.bit              => "bool",
+                SQLType.smalldatetime or SQLType.datetime or SQLType.date or SQLType.datetime2 => "DateTime",
+                SQLType.datetimeoffset   => "DateTimeOffset",
+                SQLType.@decimal or SQLType.money or SQLType.numeric or SQLType.smallmoney => "decimal",
+                SQLType.@float           => "double",
+                SQLType.@int             => "int",
+                SQLType.real             => "Single",
+                SQLType.smallint         => "short",
+                SQLType.uniqueidentifier => "Guid",
+                SQLType.sql_variant      => "object",
+                SQLType.time             => "TimeSpan",
+                _ => throw new Exception("none equal type"),
+            };
         }
 
         public enum SQLType

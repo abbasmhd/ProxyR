@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ProxyR.OpenAPI;
 
@@ -45,9 +43,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Provides the UI for exploring the Open-API documentation.
         /// </summary>
-        public static IApplicationBuilder UseOpenApiUi(
-            this IApplicationBuilder pipeline,
-            Action<OpenAPIOptionsBuilder>? optionsFunc = null)
+        public static IApplicationBuilder UseOpenApiUi(this IApplicationBuilder pipeline, Action<OpenAPIOptionsBuilder>? optionsFunc = null)
         {
             OpenAPIOptions openApiOptions;
 
@@ -89,10 +85,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private static string ResolveJsonPath(string jsonPath, OpenAPIOptions openApiOptions)
         {
-            jsonPath = jsonPath.Replace("{documentName}",
-                openApiOptions.DocumentName
-                ?? openApiOptions.ApiVersion
-                ?? "docs");
+            jsonPath = jsonPath.Replace("{documentName}", openApiOptions.DocumentName ?? openApiOptions.ApiVersion ?? "docs");
 
             jsonPath = $"/{jsonPath}";
 

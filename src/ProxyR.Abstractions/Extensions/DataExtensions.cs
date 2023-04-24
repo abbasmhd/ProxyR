@@ -1,11 +1,7 @@
 ﻿using ProxyR.Abstractions.Utilities;
 using ProxyR.Core.Extensions;
-using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProxyR.Abstractions.Extensions
 {
