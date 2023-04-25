@@ -11,8 +11,11 @@ namespace ProxyR.Abstractions.Utilities
     public class ConversionUtility
     {
         /// <summary>
-        /// Converts the primitive value to the desired type, accounting for nullable types.
+        /// Converts an object to a specified type.
         /// </summary>
+        /// <param name="value">The object to convert.</param>
+        /// <param name="targetType">The type to convert the object to.</param>
+        /// <returns>The converted object.</returns>
         public static object Convert(object value, Type targetType)
         {
             switch (value)
@@ -38,8 +41,11 @@ namespace ProxyR.Abstractions.Utilities
         }
 
         /// <summary>
-        /// Copies an object's properties into a dictionary.
+        /// Converts an object to a dictionary of string and object pairs.
         /// </summary>
+        /// <param name="source">The object to convert.</param>
+        /// <param name="useDbNulls">Whether to use DBNull.Value for null values.</param>
+        /// <returns>A dictionary of string and object pairs.</returns>
         public static IDictionary<string, object> ObjectToDictionary(object source, bool useDbNulls = false)
         {
             var dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
@@ -52,8 +58,12 @@ namespace ProxyR.Abstractions.Utilities
         }
 
         /// <summary>
-        /// Creates a DataRow, for a DataTable from the properties of an entity object.
+        /// Converts an entity to a DataRow.
         /// </summary>
+        /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <param name="entity">The entity to convert.</param>
+        /// <param name="table">The DataTable to use.</param>
+        /// <returns>A DataRow containing the entity's data.</returns>
         public static DataRow EntityToDataRow<TEntity>(TEntity entity, DataTable table)
         {
             var row = table.NewRow();
@@ -62,8 +72,10 @@ namespace ProxyR.Abstractions.Utilities
         }
 
         /// <summary>
-        /// Creates a DataTable from a Dictionary. Will have a Key column and a Value column.
+        /// Converts a dictionary to a DataTable.
         /// </summary>
+        /// <param name="dictionary">The dictionary to convert.</param>
+        /// <returns>A DataTable containing the dictionary's key-value pairs.</returns>
         public DataTable DictionaryToDataTable(IDictionary<string, object> dictionary)
         {
             var dataTable = new DataTable();
@@ -83,10 +95,11 @@ namespace ProxyR.Abstractions.Utilities
         }
 
         /// <summary>
-        /// Creates an object, and sets the properties to the values 
-        /// found in the dictionary where the key/value pairs have 
-        /// keys matching the property names.
+        /// Converts a dictionary to an object of type T.
         /// </summary>
+        /// <typeparam name="T">The type of the object to be created.</typeparam>
+        /// <param name="dictionary">The dictionary to be converted.</param>
+        /// <returns>An object of type T.</returns>
         public T DictionaryToObject<T>(IDictionary<string, object> dictionary) where T : new()
         {
             var properties = typeof(T).GetProperties()
@@ -109,10 +122,10 @@ namespace ProxyR.Abstractions.Utilities
         }
 
         /// <summary>
-        /// Converts a string of key-value pairs, in a format similar to a connection-string, 
-        /// and will return a dictionary. The the connection-string is NULL or empty, will 
-        /// return an empty dictionary.
+        /// Converts a connection string into a dictionary of key-value pairs.
         /// </summary>
+        /// <param name="connectionString">The connection string to convert.</param>
+        /// <returns>A dictionary of key-value pairs.</returns>
         public IDictionary<string, string> ConnectionStringToDictionary(string connectionString)
         {
             if (String.IsNullOrWhiteSpace(connectionString))

@@ -1,5 +1,8 @@
 ﻿namespace ProxyR.Abstractions.Commands
 {
+    /// <summary>
+    /// Enum to represent the different types of database objects.
+    /// </summary>
     public enum DbObjectType
     {
         InlineTableValuedFunction = 1,

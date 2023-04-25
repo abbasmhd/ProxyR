@@ -3,31 +3,43 @@ using System;
 
 namespace ProxyR.Abstractions.Utilities
 {
+    /// <summary>
+    /// This class provides utility methods for dealing with null values.
+    /// </summary>
     public class NullUtility
     {
         /// <summary>
-        /// Checks if the value is NULL, even if it's a Nullable<> object.
+        /// Checks if the given object is null.
         /// </summary>
+        /// <param name="value">The object to check.</param>
+        /// <returns>True if the object is null, false otherwise.</returns>
         public static bool IsNull(object value) => UnwrapNullable(value) == null;
 
         /// <summary>
-        /// Checks if the object is NULL, or an empty-string?
+        /// Checks if the given object is null or an empty string.
         /// </summary>
+        /// <param name="value">The object to check.</param>
+        /// <returns>True if the object is null or an empty string, false otherwise.</returns>
         public static bool IsNullOrEmpty(object value) => IsNull(value) || value is string stringValue && stringValue == String.Empty;
 
         /// <summary>
-        /// Converts an empty-string to a NULL, if value is an empty-String.
+        /// Converts an empty value to null.
         /// </summary>
+        /// <param name="value">The value to convert.</param>
+        /// <returns>Null if the value is empty, otherwise the original value.</returns>
         public static object EmptyToNull(object value) => IsNullOrEmpty(value) ? null : value;
 
         /// <summary>
-        /// Should the value be NULL or DBNull, this will return it as DBNull.
+        /// Converts a given value to DBNull if it is null or empty.
         /// </summary>
         public static object NullToDbNull(object value) => IsNullOrEmpty(value) ? DBNull.Value : value;
 
+
         /// <summary>
-        /// If the object is of type Nullable<T>, this will unwrap into a non-nullable version.
+        /// Unwraps a nullable object and returns the underlying value.
         /// </summary>
+        /// <param name="value">The object to unwrap.</param>
+        /// <returns>The underlying value of the nullable object.</returns>
         public static object UnwrapNullable(object value)
         {
             if (value == null || value is DBNull)

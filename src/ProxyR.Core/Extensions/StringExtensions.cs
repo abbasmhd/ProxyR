@@ -9,8 +9,12 @@ namespace ProxyR.Core.Extensions
     public static class StringExtensions
     {
         /// <summary>
-        ///     Indents every line by a certain amount of tab-strings.
+        /// Indents a string with the specified tab unit and tab count.
         /// </summary>
+        /// <param name="source">The string to indent.</param>
+        /// <param name="tabUnit">The tab unit to use for indentation.</param>
+        /// <param name="tabCount">The number of tab units to use for indentation.</param>
+        /// <returns>The indented string.</returns>
         public static string Indent(this string source, string tabUnit = "\t", int tabCount = 1)
         {
             var tab = tabUnit.Repeat(tabCount);
@@ -19,8 +23,11 @@ namespace ProxyR.Core.Extensions
         }
 
         /// <summary>
-        ///     Returns the given string repeated multiple times.
+        /// Repeats a given string a specified number of times.
         /// </summary>
+        /// <param name="source">The string to be repeated.</param>
+        /// <param name="count">The number of times to repeat the string.</param>
+        /// <returns>The repeated string.</returns>
         public static string Repeat(this string source, int count)
         {
             var builder = new StringBuilder();
@@ -97,12 +104,12 @@ namespace ProxyR.Core.Extensions
         }
 
         /// <summary>
-        ///     I'm so sick of typing EqualsOrdinalIgnoreCase all the time and all the space it takes up :p
+        /// Compares two strings using ordinal comparison ignoring case.
         /// </summary>
         public static bool EqualsOIC(this string source, string toCompare) => source.EqualsOrdinalIgnoreCase(toCompare);
 
         /// <summary>
-        ///     Splits a string by a single character delimiter and removes any empty entries
+        /// Splits a string into an array of strings based on the specified delimiters, while removing any empty entries.
         /// </summary>
         public static IEnumerable<string> SplitRemoveEmpty(this string source, params char[] delimiter)
             => source.IsNullOrWhiteSpace()

@@ -55,9 +55,12 @@ namespace ProxyR.Abstractions.Execution
             return result;
         }
 
-        /// <summary>
-        ///     Creates a command factory, whereby the connection has already been created.
+        /// Creates a command factory for a given connection, sql and parameters.
         /// </summary>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameters to use.</param>
+        /// <returns>A command factory result.</returns>
         private static Func<Task<DbCommandFactoryResult>> CreateCommandFactory(DbConnection connection, string sql, params object[] parameters)
         {
             var result = (Func<Task<DbCommandFactoryResult>>)(async () =>
@@ -82,8 +85,12 @@ namespace ProxyR.Abstractions.Execution
         }
 
         /// <summary>
-        ///     Creates a command factory, that also creates and opens a new connection.
+        /// Creates a command factory, that also creates and opens a new connection.
         /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        /// <param name="sql">The SQL.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns>A <see cref="DbCommandFactoryResult"/>.</returns>
         public static Func<Task<DbCommandFactoryResult>> CreateCommandFactory(string connectionString, string sql, params object[] parameters)
         {
             var result = (Func<Task<DbCommandFactoryResult>>)(async () =>
@@ -105,8 +112,10 @@ namespace ProxyR.Abstractions.Execution
         }
 
         /// <summary>
-        ///     Creates a new connection based upon a given connection-string or a configured connection-string.
+        /// Creates a new SqlConnection using the provided connection string.
         /// </summary>
+        /// <param name="connectionString">The connection string to use for the connection.</param>
+        /// <returns>A new SqlConnection.</returns>
         public static DbConnection CreateConnection(string connectionString)
         {
             // Create the connection.
@@ -115,9 +124,14 @@ namespace ProxyR.Abstractions.Execution
             return connection;
         }
 
+
         /// <summary>
-        ///     Creates a command that can be executed from the main parameters.
+        /// Creates a DbCommand object with the given connection, sql and parameters.
         /// </summary>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameters to use.</param>
+        /// <returns>The created DbCommand object.</returns>
         public static DbCommand CreateCommand(DbConnection connection, string sql, params object[] parameters)
         {
             // Setup the command.
