@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\ProxyR.Abstractions\ProxyR.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\ProxyR.Abstractions\ProxyR.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
