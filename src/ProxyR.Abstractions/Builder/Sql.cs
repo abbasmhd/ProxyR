@@ -180,12 +180,12 @@ namespace ProxyR.Abstractions.Builder
 
             return value switch
             {
-                string stringValue => $"'{stringValue.Replace("'", "''")}'",
-                DateTime dateTime => $"'{dateTime:yyyy-MM-dd HH:mm:ss.fff}'",
-                bool isTrue => isTrue ? "1" : "0",
-                Guid guid => $"'{guid}'",
-                byte[] bytes => $"CONVERT(VARBINARY(MAX), '0x{BytesToHex(bytes)}', 1)",
-                _ => value.ToString(),
+                string stringValue  => $"'{stringValue.Replace("'", "''")}'",
+                DateTime dateTime   => $"'{dateTime:yyyy-MM-dd HH:mm:ss.fff}'",
+                bool isTrue         => isTrue ? "1" : "0",
+                Guid guid           => $"'{guid}'",
+                byte[] bytes        => $"CONVERT(VARBINARY(MAX), '0x{BytesToHex(bytes)}', 1)",
+                _                   => value.ToString(),
             };
         }
 

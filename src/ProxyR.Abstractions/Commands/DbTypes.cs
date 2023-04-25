@@ -80,10 +80,10 @@ namespace ProxyR.Abstractions.Commands
         {
             return jsType.ToLower() switch
             {
-                "string" => _types.First(x => x.DbTypeName == "NVARCHAR"),
-                "number" => _types.First(x => x.DbTypeName == "DECIMAL"),
+                "string"  => _types.First(x => x.DbTypeName == "NVARCHAR"),
+                "number"  => _types.First(x => x.DbTypeName == "DECIMAL"),
                 "boolean" => _types.First(x => x.DbTypeName == "BIT"),
-                _ => _types.First(x => x.DbTypeName == "NVARCHAR"),
+                _         => _types.First(x => x.DbTypeName == "NVARCHAR"),
             };
         }
 
