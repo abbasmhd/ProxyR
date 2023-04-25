@@ -20,11 +20,23 @@ namespace ProxyR.Abstractions.Execution
         private int _timeout = 30;
         private Action<string> _messageReceiver;
 
+        /// <summary>
+        /// Constructor for DbResult class.
+        /// </summary>
+        /// <param name="commandFactory">Function to create a DbCommandFactoryResult.</param>
+        /// <returns>
+        /// An instance of the DbResult class.
+        /// </returns>
         public DbResult(Func<Task<DbCommandFactoryResult>> commandFactory)
         {
             _commandFactory = commandFactory;
         }
 
+        /// <summary>
+        /// Sets the action to be called when a message is received.
+        /// </summary>
+        /// <param name="onMessage">The action to be called when a message is received.</param>
+        /// <returns>The current instance of the <see cref="DbResult"/> class.</returns>
         public DbResult WithMessageReceiver(Action<string> onMessage)
         {
             _messageReceiver = onMessage;

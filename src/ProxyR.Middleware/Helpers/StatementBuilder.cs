@@ -36,6 +36,16 @@ namespace ProxyR.Middleware.Helpers
             return (schema, name);
         }
 
+        /// <summary>
+        /// Builds a SQL statement for querying and outputting the results, optionally including paging, sorting, filtering and grouping.
+        /// </summary>
+        /// <param name="statement">The SQL statement.</param>
+        /// <param name="paramBuilder">The parameter builder.</param>
+        /// <param name="requestParams">The request parameters.</param>
+        /// <param name="schema">The schema.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="arguments">The arguments.</param>
+        /// <param name="isView">Whether the query is for a view.</param>
         public static void BuildSqlUnit(
           SqlBuilder statement,
           ParameterBuilder paramBuilder,
@@ -54,15 +64,18 @@ namespace ProxyR.Middleware.Helpers
             }
         }
 
+        /// <summary>
+        /// Builds a SELECT statement for a given request parameters, schema, name, and arguments.
+        /// </summary>
         private static void BuildSelectStatement(
-          SqlBuilder statement,
-          ParameterBuilder paramBuilder,
-          ProxyRQueryParameters requestParams,
-          string schema,
-          string name,
-          string[] arguments,
-          bool includeCount = false,
-          bool isView = false)
+               SqlBuilder statement,
+               ParameterBuilder paramBuilder,
+               ProxyRQueryParameters requestParams,
+               string schema,
+               string name,
+               string[] arguments,
+               bool includeCount = false,
+               bool isView = false)
         {
             // Write the SELECT clause, with the output columns.
             BuildSelectClause(statement, requestParams, includeCount);
@@ -144,11 +157,11 @@ namespace ProxyR.Middleware.Helpers
                 {
                     // Get us to sort the value [1] instead of a column.
                     requestParams.Sort = new List<ProxyRSortParameters> {
-            new ProxyRSortParameters {
-              Literal = "1",
-              IsDescending = false
-            }
-          };
+                        new ProxyRSortParameters {
+                            Literal = "1",
+                            IsDescending = false
+                        }
+                    };
                 }
 
                 // Create an array of column sort expressions.
@@ -174,6 +187,9 @@ namespace ProxyR.Middleware.Helpers
             statement.Line();
         }
 
+        /// <summary>
+        /// Builds the SELECT clause for a given SqlBuilder statement, ProxyRQueryParameters, and optional includeCount flag.
+        /// </summary>
         private static void BuildSelectClause(SqlBuilder statement, ProxyRQueryParameters parameters, bool includeCount = false)
         {
             // Write the SELECT clause and columns.
@@ -203,11 +219,18 @@ namespace ProxyR.Middleware.Helpers
             statement.Indent(cols => cols.StartNewLine(Sql.CommaLines(selectExpressions.ToArray())));
         }
 
+        /// <summary>
+        /// Builds a WHERE expression from a JArray source expression, adding parameters to the ParameterBuilder.
+        /// </summary>
+        /// <param name="targetExpression">The SqlBuilder to add the expression to.</param>
+        /// <param name="sourceExpression">The JArray source expression.</param>
+        /// <param name="paramBuilder">The ParameterBuilder to add parameters to.</param>
+        /// <param name="includeBrackets">Whether to include brackets around the expression.</param>
         private static void BuildWhereExpression(
-          SqlBuilder targetExpression,
-          JArray sourceExpression,
-          ParameterBuilder paramBuilder,
-          bool includeBrackets = true)
+                 SqlBuilder targetExpression,
+                 JArray sourceExpression,
+                 ParameterBuilder paramBuilder,
+                 bool includeBrackets = true)
         {
             if (sourceExpression.Count < 2)
             {
@@ -374,6 +397,9 @@ namespace ProxyR.Middleware.Helpers
             }
         }
 
+        /// <summary>
+        /// Parses the OData query string parameters and sets the corresponding values in the <see cref="ProxyRQueryParameters"/> object.
+        /// </summary>
         public static void GetODataQueryStringParameters(IQueryCollection queryString, ProxyRQueryParameters queryParams)
         {
             var queryStringExpand = queryString["$expand"].FirstOrDefault();
@@ -445,6 +471,11 @@ namespace ProxyR.Middleware.Helpers
             }
         }
 
+        /// <summary>
+        /// Gets the OData sort expression from the given order by column.
+        /// </summary>
+        /// <param name="orderByColumn">The order by column.</param>
+        /// <returns>The OData sort expression.</returns>
         private static ProxyRSortParameters GetODataSortExpression(string orderByColumn)
         {
             var parts = orderByColumn.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
@@ -460,6 +491,11 @@ namespace ProxyR.Middleware.Helpers
             };
         }
 
+        /// <summary>
+        /// Parses a filter expression string into a JArray object.
+        /// </summary>
+        /// <param name="filterText">The filter expression string.</param>
+        /// <returns>A JArray object representing the filter expression.</returns>
         private static JArray GetODataFilterExpression(string filterText)
         {
             var rootExpression = new JArray();

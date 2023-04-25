@@ -5,8 +5,16 @@ using System.Threading.Tasks;
 
 namespace ProxyR.Abstractions.Utilities
 {
+    /// <summary>
+    /// This class provides utility methods for working with Stream objects.
+    /// </summary>
     public class StreamUtility
     {
+        /// <summary>
+        /// Reads a stream as a string and returns the stream and the string.
+        /// </summary>
+        /// <param name="stream">The stream to read.</param>
+        /// <returns>A tuple containing the stream and the string.</returns>
         public static async Task<(Stream InMemoryStream, string Text)> ReadAsStringAsync(Stream stream)
         {
             // Do we have a body?
