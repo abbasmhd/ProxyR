@@ -5,6 +5,7 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ProxyR.Abstractions.Builder
@@ -76,18 +77,6 @@ namespace ProxyR.Abstractions.Builder
         public static string ParenthesisLines(params string[] contents) => String.Join("\n, ", contents.Select(r => $"({r})"));
 
         /// <summary>
-        /// Joins the given values into a comma-separated string, with each value quoted.
-        /// </summary>
-        public static string Values(IEnumerable<object> values) => String.Join(", ", values.SelectQuoted());
-
-        /// <summary>
-        /// Returns a string representation of the given values.
-        /// </summary>
-        /// <param name="values">The values to be converted to a string.</param>
-        /// <returns>A string representation of the given values.</returns>
-        public static string Values(params object[] values) => Values((IEnumerable<object>)values);
-
-        /// <summary>
         /// Joins the given strings into a single string, separated by a new line and a comma.
         /// </summary>
         public static string CommaLines(params string[] lines) => String.Join("\n, ", lines);
@@ -105,13 +94,15 @@ namespace ProxyR.Abstractions.Builder
         /// <returns>A SQL column definition string.</returns>
         public static string ColumnDefinition(string columnName, string type, bool? isNullable = null, string defaultExpression = null, int columnNamePadding = 0, bool doPadding = false, string collation = null)
         {
+            type = type.ToUpper();
+
             var columnPart = $"[{columnName}]".PadRight(doPadding ? columnNamePadding : 0);
 
             var collationPart = String.Empty;
 
-            if (type.IndexOf("char", StringComparison.InvariantCultureIgnoreCase) > -1)
+            if (type.IndexOf("CHAR", StringComparison.InvariantCultureIgnoreCase) > -1)
             {
-                collationPart = $"COLLATE {collation ?? "DATABASE_DEFAULT"}";
+                collationPart = $"COLLATE {(String.IsNullOrWhiteSpace(collation) ? "DATABASE_DEFAULT" : collation)}";
             }
 
             var nullablePart = String.Empty;
@@ -125,7 +116,9 @@ namespace ProxyR.Abstractions.Builder
 
             if (defaultExpression != null)
             {
-                defaultPart = $"= {defaultExpression}";
+                defaultPart = String.IsNullOrWhiteSpace(defaultExpression)
+                    ? $"= ''"
+                    : $"= {defaultExpression}";
             }
 
             var result = String.Join(" ",
@@ -137,6 +130,18 @@ namespace ProxyR.Abstractions.Builder
                 .Trim();
             return result;
         }
+
+        /// <summary>
+        /// Joins the given values into a comma-separated string, with each value quoted.
+        /// </summary>
+        public static string Values(IEnumerable<object> values) => String.Join(", ", values.SelectQuoted());
+
+        /// <summary>
+        /// Returns a string representation of the given values.
+        /// </summary>
+        /// <param name="values">The values to be converted to a string.</param>
+        /// <returns>A string representation of the given values.</returns>
+        public static string Values(params object[] values) => Values((IEnumerable<object>)values);
 
         /// <summary>
         /// Selects the quoted version of each value in the given sequence.
@@ -160,17 +165,37 @@ namespace ProxyR.Abstractions.Builder
         {
             if (value is JValue jValue)
             {
-                value = jValue.Type switch
+                switch (jValue.Type)
                 {
-                    JTokenType.Bytes => (byte[])jValue,
-                    JTokenType.Integer => int.Parse(jValue.ToString(CultureInfo.InvariantCulture)),
-                    JTokenType.Float => float.Parse(jValue.ToString(CultureInfo.InvariantCulture)),
-                    JTokenType.Boolean => bool.Parse(jValue.ToString(CultureInfo.InvariantCulture)),
-                    JTokenType.Null or JTokenType.Undefined => null,
-                    JTokenType.Date => DateTime.Parse(jValue.ToString(CultureInfo.InvariantCulture)),
-                    JTokenType.String or JTokenType.TimeSpan or JTokenType.Guid or JTokenType.Uri => jValue.ToString(CultureInfo.InvariantCulture),
-                    _ => throw new InvalidOperationException($"Unknown JTokenType [{value}]."),
-                };
+                    case JTokenType.Bytes:
+                        value = (byte[])jValue;
+                        break;
+                    case JTokenType.Integer:
+                        value = int.Parse(jValue.ToString(CultureInfo.InvariantCulture));
+                        break;
+                    case JTokenType.Float:
+                        value = float.Parse(jValue.ToString(CultureInfo.InvariantCulture));
+                        break;
+                    case JTokenType.Boolean:
+                        value = bool.Parse(jValue.ToString(CultureInfo.InvariantCulture));
+                        break;
+                    case JTokenType.Null:
+                    case JTokenType.Undefined:
+                        value = null;
+                        break;
+                    case JTokenType.Date:
+                        value = DateTime.Parse(jValue.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture));
+                        break;
+                    case JTokenType.String:
+                    case JTokenType.TimeSpan:
+                    case JTokenType.Guid:
+                    case JTokenType.Uri:
+                        value = jValue.ToString(CultureInfo.InvariantCulture);
+                        break;
+                    default:
+                        // Should never happen.
+                        throw new InvalidOperationException($"Unknown JTokenType [{value}].");
+                }
             }
 
             if (value == null || value == DBNull.Value)
@@ -178,21 +203,27 @@ namespace ProxyR.Abstractions.Builder
                 return "NULL";
             }
 
-            return value switch
+            switch (value)
             {
-                string stringValue  => $"'{stringValue.Replace("'", "''")}'",
-                DateTime dateTime   => $"'{dateTime:yyyy-MM-dd HH:mm:ss.fff}'",
-                bool isTrue         => isTrue ? "1" : "0",
-                Guid guid           => $"'{guid}'",
-                byte[] bytes        => $"CONVERT(VARBINARY(MAX), '0x{BytesToHex(bytes)}', 1)",
-                _                   => value.ToString(),
-            };
+                case string stringValue:
+                    return $"'{stringValue.Replace("'", "''")}'";
+                case DateTime dateTime:
+                    return $"'{dateTime:yyyy-MM-dd HH:mm:ss.fff}'";
+                case bool isTrue:
+                    return isTrue ? "1" : "0";
+                case Guid guid:
+                    return $"'{guid}'";
+                case byte[] bytes:
+                    return $"CONVERT(VARBINARY(MAX), '0x{BytesToHex(bytes)}', 1)";
+                default:
+                    return value.ToString();
+            }
         }
 
         /// <summary>
         /// Converts a sequence of bytes to a hexadecimal string.
         /// </summary>
-        private static string BytesToHex(IEnumerable<byte> bytes) => string.Concat(bytes.Select(x => x.ToString("X2")));
+        public static string BytesToHex(IEnumerable<byte> bytes) => string.Concat(bytes.Select(x => x.ToString("X2")));
     }
 
 }
