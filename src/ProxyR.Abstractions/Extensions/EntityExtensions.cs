@@ -41,19 +41,19 @@ namespace ProxyR.Abstractions.Extensions
                     var column = table.Columns.Add(property.Name, property.PropertyType.GetNullableUnderlyingType());
 
                     var maxLengthAttribute = property.GetCustomAttribute<MaxLengthAttribute>();
-                    if (maxLengthAttribute != null)
+                    if (maxLengthAttribute is not null)
                     {
                         column.MaxLength = maxLengthAttribute.Length;
                     }
 
                     var requiredAttribute = property.GetCustomAttribute<RequiredAttribute>();
-                    if (requiredAttribute != null)
+                    if (requiredAttribute is not null)
                     {
                         column.AllowDBNull = false;
                     }
 
                     var keyAttribute = property.GetCustomAttribute<KeyAttribute>();
-                    if (keyAttribute != null)
+                    if (keyAttribute is not null)
                     {
                         column.AllowDBNull = false;
                         primaryKey.Add(column);
@@ -170,7 +170,7 @@ namespace ProxyR.Abstractions.Extensions
             var table = new DataTable();
 
             // Setup all the columns.
-            if (columns != null)
+            if (columns is not null)
             {
                 foreach (var column in columns)
                 {
@@ -193,7 +193,7 @@ namespace ProxyR.Abstractions.Extensions
         /// <returns>The resulting entity instance.</returns>
         public static TEntity ToEntity<TEntity>(this DataRow row, DbEntityMap map = null) where TEntity : class, new()
         {
-            if (map == null)
+            if (map is null)
             {
                 map = DbEntityMap.GetOrCreate(typeof(TEntity));
             }
@@ -205,7 +205,7 @@ namespace ProxyR.Abstractions.Extensions
             {
                 // Get the column from the parent table.
                 var column = row.Table.Columns[entry.ColumnName];
-                if (column == null)
+                if (column is null)
                 {
                     continue;
                 }
@@ -230,7 +230,7 @@ namespace ProxyR.Abstractions.Extensions
         /// <returns>The resulting entity instance.</returns>
         public static TEntity ToEntity<TEntity>(this IDataReader dataReader, DbEntityMap map = null) where TEntity : class, new()
         {
-            if (map == null)
+            if (map is null)
             {
                 map = DbEntityMap.GetOrCreate(typeof(TEntity));
             }
@@ -265,7 +265,7 @@ namespace ProxyR.Abstractions.Extensions
         /// <returns>An IEnumerable of entities of the specified type.</returns>
         public static IEnumerable<TEntity> ToEntity<TEntity>(this DataTable table, DbEntityMap map = null) where TEntity : class, new()
         {
-            if (map == null)
+            if (map is null)
             {
                 map = DbEntityMap.GetOrCreate(typeof(TEntity));
             }
@@ -299,7 +299,7 @@ namespace ProxyR.Abstractions.Extensions
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
 
-            if (property == null)
+            if (property is null)
             {
                 throw new InvalidOperationException($"Could not sort by {propertyName}, as property does not exist.");
             }
@@ -382,7 +382,7 @@ namespace ProxyR.Abstractions.Extensions
         public static TEntity GetOrCreate<TEntity, TProp>(this DbSet<TEntity> dbSet, Expression<Func<TEntity, TProp>> selector, TProp value) where TEntity : class, new()
         {
             // Simple null check first.
-            if (value == null)
+            if (value is null)
             {
                 return null;
             }
@@ -402,7 +402,7 @@ namespace ProxyR.Abstractions.Extensions
             var result = dbSet.Local.FirstOrDefault(localPredicate) ?? dbSet.FirstOrDefault(predicate);
 
             // Is there an object to return?
-            if (result != null)
+            if (result is not null)
             {
                 return result;
             }
@@ -438,7 +438,7 @@ namespace ProxyR.Abstractions.Extensions
             {
                 typeColumn = dataTable.Columns["EntityType"];
             }
-            else if (defaultTypeProperty == null)
+            else if (defaultTypeProperty is null)
             {
                 throw new InvalidOperationException("Columns $Type and EntityType do not exist in data-table, cannot be imported into JDataSet.");
             }
@@ -448,10 +448,10 @@ namespace ProxyR.Abstractions.Extensions
             {
                 // Get the type from the row.
                 string typeName = null;
-                if (typeColumn != null)
+                if (typeColumn is not null)
                 {
                     typeName = row[typeColumn] as string;
-                    if (typeName == null && defaultTypeProperty == null)
+                    if (typeName is null && defaultTypeProperty is null)
                     {
                         throw new InvalidOperationException("Row does not have a type.");
                     }
@@ -459,11 +459,9 @@ namespace ProxyR.Abstractions.Extensions
 
                 // Get the camel-case version.
                 string camelTypeName;
-                if (typeName != null)
+                if (typeName is not null)
                 {
-                    camelTypeName = typeName
-                        .Camelize()
-                        .Pluralize();
+                    camelTypeName = typeName.Camelize().Pluralize();
                 }
                 else
                 {
@@ -481,14 +479,14 @@ namespace ProxyR.Abstractions.Extensions
                 {
                     // Does the dataset have that property.
                     var typeProperty = jDataSet.Property(camelTypeName);
-                    if (typeProperty == null)
+                    if (typeProperty is null)
                     {
                         typeProperty = new JProperty(camelTypeName);
                         jDataSet.Add(typeProperty);
                     }
 
                     // Make sure we have an array inside.
-                    if (!(typeProperty.Value is JArray jTable))
+                    if (typeProperty.Value is not JArray jTable)
                     {
                         jTable = new JArray();
                         typeProperty.Value = jTable;

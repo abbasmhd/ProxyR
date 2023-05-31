@@ -41,20 +41,6 @@ namespace ProxyR.Core.Extensions
         }
 
         /// <summary>
-        ///     Converts an empty-string or string with only whitespace to NULL, otherwise returns the same String.
-        /// </summary>
-        /// <param name="source">The value of the string to convert.</param>
-        public static string EmptyToNull(this string source) => string.IsNullOrWhiteSpace(source) ? null : source;
-
-        /// <summary>
-        ///     Removes the end of a String.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="count"></param>
-        /// <returns></returns>
-        public static string RemoveEnd(this string source, int count) => source.Remove(source.Length - count, count);
-
-        /// <summary>
         ///     Determines whether the string has non-whitespace characters present in it.
         ///     Uses String.IsNullOrWhiteSpace();
         /// </summary>
@@ -125,7 +111,7 @@ namespace ProxyR.Core.Extensions
         /// <returns>Split, trimmed, empty items removed array of the parts.</returns>
         public static string[] SplitTrimRemoveEmpty(this string source, params char[] delimiter)
         {
-            if (source == null)
+            if (source is null)
             {
                 return Array.Empty<string>();
             }
@@ -186,7 +172,7 @@ namespace ProxyR.Core.Extensions
                 {
                     commitWord();
                 }
-                else if (char.IsUpper(currentChar) && lastChar != null && (!char.IsLetter(lastChar.Value) || !char.IsUpper(lastChar.Value)))
+                else if (char.IsUpper(currentChar) && lastChar is not null && (!char.IsLetter(lastChar.Value) || !char.IsUpper(lastChar.Value)))
                 {
                     commitWord();
                     currentWord.Add(currentChar);
@@ -273,7 +259,7 @@ namespace ProxyR.Core.Extensions
             words[0] = words[0].ToLower();
 
             // Join to a new result.
-            var result = string.Join(string.Empty, words);
+            var result = String.Join(string.Empty, words);
 
             return result;
         }

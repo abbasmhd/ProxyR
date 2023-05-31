@@ -39,7 +39,7 @@ namespace ProxyR.Abstractions.Utilities
             .ToArray();
 
             // Filter on property names, or by primitive properties.
-            if (propertyNames != null)
+            if (propertyNames is not null)
             {
                 joinedProperties = joinedProperties
                     .Where(p => propertyNames.Contains(p.Left.Name, StringComparer.OrdinalIgnoreCase))
@@ -57,12 +57,12 @@ namespace ProxyR.Abstractions.Utilities
             {
                 var leftValue = joinedProperty.Left.GetValue(left);
                 var rightValue = joinedProperty.Right.GetValue(right);
-                if (leftValue == null && rightValue == null)
+                if (leftValue is null && rightValue is null)
                 {
                     continue;
                 }
 
-                if (leftValue == null && rightValue != null)
+                if (leftValue is null && rightValue is not null)
                 {
                     return false;
                 }

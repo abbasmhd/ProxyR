@@ -76,7 +76,7 @@ namespace ProxyR.Abstractions.Utilities
         /// </summary>
         /// <param name="dictionary">The dictionary to convert.</param>
         /// <returns>A DataTable containing the dictionary's key-value pairs.</returns>
-        public DataTable DictionaryToDataTable(IDictionary<string, object> dictionary)
+        public static DataTable DictionaryToDataTable(IDictionary<string, object> dictionary)
         {
             var dataTable = new DataTable();
 
@@ -100,7 +100,7 @@ namespace ProxyR.Abstractions.Utilities
         /// <typeparam name="T">The type of the object to be created.</typeparam>
         /// <param name="dictionary">The dictionary to be converted.</param>
         /// <returns>An object of type T.</returns>
-        public T DictionaryToObject<T>(IDictionary<string, object> dictionary) where T : new()
+        public static T DictionaryToObject<T>(IDictionary<string, object> dictionary) where T : new()
         {
             var properties = typeof(T).GetProperties()
                 .ToDictionary(p => p.Name, StringComparer.InvariantCultureIgnoreCase);
@@ -126,7 +126,7 @@ namespace ProxyR.Abstractions.Utilities
         /// </summary>
         /// <param name="connectionString">The connection string to convert.</param>
         /// <returns>A dictionary of key-value pairs.</returns>
-        public IDictionary<string, string> ConnectionStringToDictionary(string connectionString)
+        public static IDictionary<string, string> ConnectionStringToDictionary(string connectionString)
         {
             if (String.IsNullOrWhiteSpace(connectionString))
             {

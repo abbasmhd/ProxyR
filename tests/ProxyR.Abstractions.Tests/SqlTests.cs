@@ -1,10 +1,5 @@
-﻿using Humanizer;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using ProxyR.Abstractions.Builder;
-using ProxyR.Abstractions.Execution;
-using System.ComponentModel;
-using System.Linq.Expressions;
 
 namespace ProxyR.Abstractions.Tests
 {
@@ -210,7 +205,6 @@ namespace ProxyR.Abstractions.Tests
         [InlineData("Id", "int", true,  "0", 15, true, "Latin1_General_CI_AS",           "[Id]            INT                                   NULL = 0")]
         [InlineData("Id", "int", false, "0", 15, true, "Latin1_General_CI_AS",           "[Id]            INT                                   NOT NULL = 0")]
         [InlineData("Id", "int", null,  "0", 15, true, "Latin1_General_CI_AS",           "[Id]            INT                                        = 0")]
-                                                                                      // "[Id]            int              = 0"
         [InlineData("Id", "int", true,  "0", 15, false, "",                              "[Id] INT  NULL = 0")]
         [InlineData("Id", "varchar(Max)",  true,  "", 15, true,  "Latin1_General_CI_AS", "[Id]            VARCHAR(MAX)     COLLATE Latin1_General_CI_AS NULL = ''")]
         [InlineData("Id", "varchar(100)",  true,  "", 15, true,  "Latin1_General_CI_AS", "[Id]            VARCHAR(100)     COLLATE Latin1_General_CI_AS NULL = ''")]
@@ -220,7 +214,13 @@ namespace ProxyR.Abstractions.Tests
         public void ColumnDefinition_ReturnsCorrectResult(string columnName, string type, bool? isNullable, string defaultExpression, int columnNamePadding, bool doPadding, string collation, string expected)
         {
             // Act
-            string result = Sql.ColumnDefinition(columnName, type, isNullable, defaultExpression, columnNamePadding, doPadding, collation);
+            string result = new ColumnDefinitionBuilder(columnName, type)
+                .IsNullable(isNullable)
+                .DefaultExpression(defaultExpression)
+                .ColumnNamePadding(columnNamePadding)
+                .DoPadding(doPadding)
+                .Collation(collation)
+                .Build();
 
             // Assert
             result.Should().Be(expected);
