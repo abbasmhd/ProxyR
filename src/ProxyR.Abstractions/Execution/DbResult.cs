@@ -533,7 +533,6 @@ namespace ProxyR.Abstractions.Execution
             // Go trhough each field, setting the table column type.
             for (var fieldIndex = 0; fieldIndex < reader.FieldCount; fieldIndex++)
             {
-                var name = reader.GetName(fieldIndex);
                 var type = reader.GetFieldType(fieldIndex);
                 table.Columns[fieldIndex].DataType = type;
             }

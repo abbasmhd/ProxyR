@@ -63,7 +63,7 @@ namespace ProxyR.Abstractions.Execution
         /// <returns>A command factory result.</returns>
         private static Func<Task<DbCommandFactoryResult>> CreateCommandFactory(DbConnection connection, string sql, params object[] parameters)
         {
-            var result = (Func<Task<DbCommandFactoryResult>>)(async () =>
+            var result = async () =>
             {
                 var command = CreateCommand(connection, sql, parameters);
 
@@ -79,7 +79,7 @@ namespace ProxyR.Abstractions.Execution
                     Command = command,
                     ConnectionString = connection.ConnectionString
                 };
-            });
+            };
 
             return result;
         }
@@ -93,7 +93,7 @@ namespace ProxyR.Abstractions.Execution
         /// <returns>A <see cref="DbCommandFactoryResult"/>.</returns>
         public static Func<Task<DbCommandFactoryResult>> CreateCommandFactory(string connectionString, string sql, params object[] parameters)
         {
-            var result = (Func<Task<DbCommandFactoryResult>>)(async () =>
+            var result = async () =>
             {
                 var connection = CreateConnection(connectionString);
                 var command = CreateCommand(connection, sql, parameters);
@@ -106,7 +106,7 @@ namespace ProxyR.Abstractions.Execution
                     Command = command,
                     ConnectionString = connectionString
                 };
-            });
+            };
 
             return result;
         }
@@ -153,21 +153,21 @@ namespace ProxyR.Abstractions.Execution
 
             // Is there a single parameter object?
             if (parameters.Length == 1
-                && !(parameters[0] is object[])
+                && parameters[0] is not object[]
                 && !parameters[0].GetType().IsDbPrimitive())
             {
 
                 // Is it not a dictionary? If not, we'll convert into one.
-                if (!(parameters[0] is IDictionary<string, object> dictionary))
+                if (parameters[0] is not IDictionary<string, object> dictionary)
                 {
                     dictionary = ConversionUtility.ObjectToDictionary(parameters[0], useDbNulls: true);
                 }
 
                 // Must be an object, of whom's properties are the parameters.
-                foreach (var (key, o) in dictionary)
+                foreach (var (key, val) in dictionary)
                 {
                     // Convert null to DBNull.
-                    var value = o ?? DBNull.Value;
+                    var value = val ?? DBNull.Value;
                     command.Parameters.Add(new SqlParameter(key, value));
                 }
 

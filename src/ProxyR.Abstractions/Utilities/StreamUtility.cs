@@ -18,7 +18,7 @@ namespace ProxyR.Abstractions.Utilities
         public static async Task<(Stream InMemoryStream, string Text)> ReadAsStringAsync(Stream stream)
         {
             // Do we have a body?
-            if (stream == null || stream == Stream.Null)
+            if (stream is null || stream == Stream.Null)
             {
                 return (stream, null);
             }

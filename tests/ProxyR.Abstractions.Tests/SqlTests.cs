@@ -220,7 +220,13 @@ namespace ProxyR.Abstractions.Tests
         public void ColumnDefinition_ReturnsCorrectResult(string columnName, string type, bool? isNullable, string defaultExpression, int columnNamePadding, bool doPadding, string collation, string expected)
         {
             // Act
-            string result = Sql.ColumnDefinition(columnName, type, isNullable, defaultExpression, columnNamePadding, doPadding, collation);
+            string result = new ColumnDefinitionBuilder(columnName, type)
+                .IsNullable(isNullable)
+                .DefaultExpression(defaultExpression)
+                .ColumnNamePadding(columnNamePadding)
+                .DoPadding(doPadding)
+                .Collation(collation)
+                .Build();
 
             // Assert
             result.Should().Be(expected);

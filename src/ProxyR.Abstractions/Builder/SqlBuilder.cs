@@ -401,7 +401,8 @@ namespace ProxyR.Abstractions.Builder
         /// <returns>The SqlBuilder instance.</returns>
         public SqlBuilder AddColumn(string tableName, string columnName, string type, bool isNullable = false)
         {
-            Line($"ALTER TABLE {tableName} ADD {Sql.ColumnDefinition(columnName: columnName, type: type, isNullable: isNullable)};");
+            var columnDefinition = new ColumnDefinitionBuilder(columnName, type).IsNullable(isNullable);
+            Line($"ALTER TABLE {tableName} ADD {columnDefinition.Build()};");
             return this;
         }
 
@@ -459,12 +460,10 @@ namespace ProxyR.Abstractions.Builder
         public SqlBuilder CreateTable(string tableName, params DataColumn[] columns)
         {
             var maxColumnNameLength = columns.Max(c => c.ColumnName.Length);
-            var columnDefintions = columns
-                .Select(c => Sql.ColumnDefinition(
-                    columnName: c.ColumnName,
-                    type: DbTypes.GetDbTypeSyntax(c.DataType, c.MaxLength),
-                    isNullable: c.AllowDBNull,
-                    columnNamePadding: maxColumnNameLength))
+            var columnDefintions = columns.Select(c => new ColumnDefinitionBuilder(c.ColumnName, DbTypes.GetDbTypeSyntax(c.DataType, c.MaxLength))
+                .IsNullable(c.AllowDBNull)
+                .ColumnNamePadding(maxColumnNameLength)
+                .Build())
                 .ToArray();
             CreateTable(tableName, columnDefintions);
             return this;

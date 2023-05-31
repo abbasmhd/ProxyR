@@ -15,6 +15,7 @@
         InternalTable             = 8,
         TableValuedFunction       = 9,
         View                      = 10,
+        StoredProcedure           = 11,
         NotSuported               = 9999999,
     }
 }

@@ -65,7 +65,15 @@ namespace ProxyR.Abstractions.Commands
             var resolvedPrecision = precision ?? dbType.DefaultPrecision;
             if (resolvedPrecision != null)
             {
-                syntax += $"({resolvedPrecision.ToString().Replace(".", ",")})";
+                // Check if the precision is an integer before replacing the decimal point with a comma.
+                if (Math.Floor(resolvedPrecision.Value) == resolvedPrecision.Value)
+                {
+                    syntax += $"({resolvedPrecision.Value:0})";
+                }
+                else
+                {
+                    syntax += $"({resolvedPrecision.ToString().Replace(".", ",")})";
+                }
             }
 
             return syntax;
@@ -80,10 +88,10 @@ namespace ProxyR.Abstractions.Commands
         {
             return jsType.ToLower() switch
             {
-                "string"  => _types.First(x => x.DbTypeName == "NVARCHAR"),
-                "number"  => _types.First(x => x.DbTypeName == "DECIMAL"),
+                "string" => _types.First(x => x.DbTypeName == "NVARCHAR"),
+                "number" => _types.First(x => x.DbTypeName == "DECIMAL"),
                 "boolean" => _types.First(x => x.DbTypeName == "BIT"),
-                _         => _types.First(x => x.DbTypeName == "NVARCHAR"),
+                _ => _types.First(x => x.DbTypeName == "NVARCHAR"),
             };
         }
 
@@ -108,15 +116,15 @@ namespace ProxyR.Abstractions.Commands
             return x switch
             {
                 DbObjectType.InlineTableValuedFunction => "IF",
-                DbObjectType.ServiceQueue              => "SQ",
-                DbObjectType.ForeignKeyConstraint      => "F",
-                DbObjectType.UserTable                 => "U",
-                DbObjectType.DefaultConstraint         => "D",
-                DbObjectType.PrimaryKeyConstraint      => "PK",
-                DbObjectType.SystemTable               => "S",
-                DbObjectType.InternalTable             => "IT",
-                DbObjectType.TableValuedFunction       => "TF",
-                DbObjectType.View                      => "V",
+                DbObjectType.ServiceQueue => "SQ",
+                DbObjectType.ForeignKeyConstraint => "F",
+                DbObjectType.UserTable => "U",
+                DbObjectType.DefaultConstraint => "D",
+                DbObjectType.PrimaryKeyConstraint => "PK",
+                DbObjectType.SystemTable => "S",
+                DbObjectType.InternalTable => "IT",
+                DbObjectType.TableValuedFunction => "TF",
+                DbObjectType.View => "V",
                 _ => throw new NotSupportedException($"DbObjectType [{x}] is not supported"),
             };
         }
@@ -141,9 +149,11 @@ namespace ProxyR.Abstractions.Commands
                 "IT" => DbObjectType.InternalTable,
                 "TF" => DbObjectType.TableValuedFunction,
                 "V"  => DbObjectType.View,
+                "P"  => DbObjectType.StoredProcedure,
                 _    => DbObjectType.NotSuported,
             };
         }
+        //Bug: The switch statement is missing a case for "P" which should be mapped to DbObjectType.StoredProcedure.
 
         /// <summary>
         /// Converts a SQL type string to a .NET type string.
@@ -164,18 +174,18 @@ namespace ProxyR.Abstractions.Commands
                 SQLType.varchar or SQLType.nvarchar or SQLType.nchar or SQLType.text or SQLType.ntext or SQLType.xml => "string",
                 SQLType.smalldatetime or SQLType.datetime or SQLType.date or SQLType.datetime2 => "DateTime",
                 SQLType.@decimal or SQLType.money or SQLType.numeric or SQLType.smallmoney => "decimal",
-                SQLType.tinyint          => "byte",
-                SQLType.@char            => "char",
-                SQLType.bigint           => "long",
-                SQLType.bit              => "bool",
-                SQLType.datetimeoffset   => "DateTimeOffset",
-                SQLType.@float           => "double",
-                SQLType.@int             => "int",
-                SQLType.real             => "Single",
-                SQLType.smallint         => "short",
+                SQLType.tinyint => "byte",
+                SQLType.@char => "char",
+                SQLType.bigint => "long",
+                SQLType.bit => "bool",
+                SQLType.datetimeoffset => "DateTimeOffset",
+                SQLType.@float => "double",
+                SQLType.@int => "int",
+                SQLType.real => "Single",
+                SQLType.smallint => "short",
                 SQLType.uniqueidentifier => "Guid",
-                SQLType.sql_variant      => "object",
-                SQLType.time             => "TimeSpan",
+                SQLType.sql_variant => "object",
+                SQLType.time => "TimeSpan",
                 _ => throw new Exception("none equal type"),
             };
         }

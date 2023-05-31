@@ -42,7 +42,7 @@ namespace ProxyR.Abstractions.Utilities
         /// <returns>The underlying value of the nullable object.</returns>
         public static object UnwrapNullable(object value)
         {
-            if (value == null || value is DBNull)
+            if (value is null or DBNull)
             {
                 return null;
             }

@@ -108,7 +108,7 @@ namespace ProxyR.Middleware.Helpers
             }
 
             // Should we write a WHERE clause?
-            if (requestParams.Filter != null && requestParams.Filter.Any())
+            if (requestParams.Filter is not null && requestParams.Filter.Any())
             {
                 // Do we need to use WHERE or WHERE NOT?
                 if (requestParams.Filter[0].ToString() == "!")
@@ -279,7 +279,7 @@ namespace ProxyR.Middleware.Helpers
                 // to change the right-value.
                 string rightString = null;
 
-                if (rightValue != null)
+                if (rightValue is not null)
                 {
                     rightString = rightValue.ToString(CultureInfo.InvariantCulture);
                 }
@@ -311,7 +311,7 @@ namespace ProxyR.Middleware.Helpers
                         rightString = $"%{rightString}";
                         break;
                     case "=":
-                        if (rightValue != null && rightValue.Type == JTokenType.Null)
+                        if (rightValue is not null && rightValue.Type == JTokenType.Null)
                         {
                             targetExpression.Literal("IS");
                         }
@@ -378,7 +378,7 @@ namespace ProxyR.Middleware.Helpers
                     }
 
                     // Quote and append.
-                    if (rightCastValue == null)
+                    if (rightCastValue is null)
                     {
                         targetExpression.Literal("NULL");
                     }
@@ -458,17 +458,12 @@ namespace ProxyR.Middleware.Helpers
                 return;
             }
 
-            switch (queryStringInlineCount)
+            queryParams.ShowTotal = queryStringInlineCount switch
             {
-                case "allpages":
-                    queryParams.ShowTotal = true;
-                    break;
-                case "none":
-                    queryParams.ShowTotal = false;
-                    break;
-                default:
-                    throw new NotSupportedException($"Value for $inlinecount={queryStringInlineCount} is not supported");
-            }
+                "allpages" => true,
+                "none" => false,
+                _ => throw new NotSupportedException($"Value for $inlinecount={queryStringInlineCount} is not supported"),
+            };
         }
 
         /// <summary>

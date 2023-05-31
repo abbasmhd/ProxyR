@@ -81,55 +81,6 @@ namespace ProxyR.Abstractions.Builder
         /// </summary>
         public static string CommaLines(params string[] lines) => String.Join("\n, ", lines);
 
-        /// <summary>
-        /// Generates a SQL column definition string for a given column name, type, nullability, default expression, column name padding, and collation.
-        /// </summary>
-        /// <param name="columnName">The name of the column.</param>
-        /// <param name="type">The data type of the column.</param>
-        /// <param name="isNullable">Whether the column is nullable.</param>
-        /// <param name="defaultExpression">The default expression for the column.</param>
-        /// <param name="columnNamePadding">The padding for the column name.</param>
-        /// <param name="doPadding">Whether to do padding.</param>
-        /// <param name="collation">The collation for the column.</param>
-        /// <returns>A SQL column definition string.</returns>
-        public static string ColumnDefinition(string columnName, string type, bool? isNullable = null, string defaultExpression = null, int columnNamePadding = 0, bool doPadding = false, string collation = null)
-        {
-            type = type.ToUpper();
-
-            var columnPart = $"[{columnName}]".PadRight(doPadding ? columnNamePadding : 0);
-
-            var collationPart = String.Empty;
-
-            if (type.IndexOf("CHAR", StringComparison.InvariantCultureIgnoreCase) > -1)
-            {
-                collationPart = $"COLLATE {(String.IsNullOrWhiteSpace(collation) ? "DATABASE_DEFAULT" : collation)}";
-            }
-
-            var nullablePart = String.Empty;
-
-            if (isNullable != null)
-            {
-                nullablePart = isNullable == true ? "NULL" : "NOT NULL";
-            }
-
-            var defaultPart = String.Empty;
-
-            if (defaultExpression != null)
-            {
-                defaultPart = String.IsNullOrWhiteSpace(defaultExpression)
-                    ? $"= ''"
-                    : $"= {defaultExpression}";
-            }
-
-            var result = String.Join(" ",
-                    columnPart,
-                    type.PadRight(doPadding ? 16 : 0),
-                    collationPart.PadRight(doPadding ? 20 : 0),
-                    nullablePart.PadRight(doPadding ? 4 : 0),
-                    defaultPart)
-                .Trim();
-            return result;
-        }
 
         /// <summary>
         /// Joins the given values into a comma-separated string, with each value quoted.
