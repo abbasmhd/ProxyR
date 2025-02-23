@@ -32,14 +32,14 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --no-restore --configuration Release
+      run: dotnet build --configuration Release
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal --configuration Release
+      run: dotnet test --configuration Release
 
     - name: Pack
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      run: dotnet pack --no-build --configuration Release --output ./nupkg
+      run: dotnet pack --configuration Release --output ./nupkg
 
     - name: Upload NuGet Package
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
