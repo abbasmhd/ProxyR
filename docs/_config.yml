@@ -1,1 +1,36 @@
 theme: jekyll-theme-cayman
+
+title: ProxyR
+description: A powerful .NET middleware that automatically exposes SQL Server table-valued functions, inline table-valued functions, and views as REST API endpoints.
+baseurl: "/ProxyR"
+url: "https://abbasmhd.github.io"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+
+# Exclude files from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .git
+  - .github
+  - README.md
+
+# Plugins
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Theme settings
+show_downloads: true
+google_analytics: # Add your Google Analytics tracking ID here
+
+# Custom variables
+version: 1.0.0
+github:
+  repository_url: https://github.com/abbasmhd/ProxyR
+  owner_url: https://github.com/abbasmhd
+  owner_name: abbasmhd

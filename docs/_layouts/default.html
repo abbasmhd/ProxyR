@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if page.title %}{{ page.title }} - {% endif %}ProxyR Documentation</title>
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="container">
+                <a href="{{ '/' | relative_url }}" class="logo">ProxyR</a>
+                <ul>
+                    <li><a href="{{ '/docs' | relative_url }}">Documentation</a></li>
+                    <li><a href="{{ '/api' | relative_url }}">API Reference</a></li>
+                    <li><a href="https://github.com/abbasmhd/ProxyR">GitHub</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            {{ content }}
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; {{ site.time | date: '%Y' }} ProxyR. Licensed under MIT.</p>
+        </div>
+    </footer>
+</body>
+</html>
