@@ -19,28 +19,41 @@ This guide will help you get up and running with ProxyR in your .NET application
 2. Install the ProxyR NuGet package:
 
 ```bash
-dotnet add package ProxyR.Middleware
+dotnet add package Abbasmhd.ProxyR
 ```
+
+Note: The package is published under the namespace `Abbasmhd.ProxyR` to follow NuGet naming conventions. This is the official package name and should be used instead of other variations.
 
 ## Basic Setup
 
-### 1. Database Setup
+### 1. Add Required Namespaces
 
-First, create a dedicated schema for your API endpoints:
+In your `Startup.cs` or `Program.cs`, add the following namespace:
 
-```sql
-CREATE SCHEMA [ProxyR] AUTHORIZATION [dbo]
+```csharp
+using ProxyR.Middleware;
 ```
 
 ### 2. Configure Services
 
-In your `Startup.cs` or `Program.cs`, add ProxyR to your services:
+Add ProxyR to your services in one of these ways:
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
+    // Method 1: Using configuration section (recommended)
+    services.AddProxyR(Configuration.GetSection("ProxyR"));
+
+    // Method 2: Using fluent configuration
     services.AddProxyR(options => options
         .UseConnectionString("your_connection_string")
+        .UseDefaultSchema("ProxyR")
+        .UseFunctionNamePrefix("Api_")
+    );
+
+    // Method 3: Using connection string from configuration
+    services.AddProxyR(options => options
+        .UseConnectionStringName("DefaultConnection")
         .UseDefaultSchema("ProxyR")
         .UseFunctionNamePrefix("Api_")
     );
@@ -61,7 +74,7 @@ Add ProxyR to your application pipeline:
 ```csharp
 public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
-    // ... other middleware
+    // ... other middleware ...
 
     app.UseProxyR();
 
@@ -84,6 +97,7 @@ Add ProxyR settings to your `appsettings.json`:
     "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=YourDatabase;Trusted_Connection=True;"
   },
   "ProxyR": {
+    "ConnectionStringName": "DefaultConnection",
     "Prefix": "Api_",
     "Suffix": "",
     "Seperator": "_",

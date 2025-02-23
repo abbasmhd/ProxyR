@@ -21,16 +21,28 @@ A powerful .NET middleware that automatically exposes SQL Server table-valued fu
 Add the ProxyR middleware to your ASP.NET Core project:
 
 ```bash
-dotnet add package ProxyR.Middleware
+# Install latest pre-release version
+dotnet add package Abbasmhd.ProxyR --prerelease
+
+# Or install specific version
+dotnet add package Abbasmhd.ProxyR --version 0.0.1-alpha
 ```
+
+Note: The package is published under the namespace `Abbasmhd.ProxyR` to follow NuGet naming conventions. This is currently a pre-release version (0.0.1-alpha) and the API may change without notice.
 
 ### Basic Configuration
 
-In your `Startup.cs`:
+In your `Startup.cs` or `Program.cs`:
 
 ```csharp
+using ProxyR.Middleware;  // Add this using statement
+
 public void ConfigureServices(IServiceCollection services)
 {
+    // Method 1: Using configuration section
+    services.AddProxyR(Configuration.GetSection("ProxyR"));
+
+    // Method 2: Using fluent configuration
     services.AddProxyR(options => options
         .UseConnectionString("your_connection_string")
         .UseDefaultSchema("dbo")
@@ -40,6 +52,7 @@ public void ConfigureServices(IServiceCollection services)
 
 public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
+    // Add ProxyR middleware to the pipeline
     app.UseProxyR();
 }
 ```
@@ -50,7 +63,11 @@ In your `appsettings.json`:
 
 ```json
 {
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=YourDatabase;Trusted_Connection=True;"
+  },
   "ProxyR": {
+    "ConnectionStringName": "DefaultConnection",  // Reference connection string by name
     "Prefix": "Api_",
     "Suffix": "",
     "Seperator": "_",
