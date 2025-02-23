@@ -1,37 +1,107 @@
-## Welcome to GitHub Pages
+---
+layout: default
+title: Home
+---
 
-You can use the [editor on GitHub](https://github.com/abbasmhd/ProxyR/edit/main/docs/index.md) to maintain and preview the content for your website in Markdown files.
+# ProxyR - SQL Server to REST API Middleware
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+[![.NET](https://github.com/abbasmhd/ProxyR/actions/workflows/dotnet.yml/badge.svg)](https://github.com/abbasmhd/ProxyR/actions/workflows/dotnet.yml)
+[![GitHub Pages](https://github.com/abbasmhd/ProxyR/actions/workflows/pages.yml/badge.svg)](https://github.com/abbasmhd/ProxyR/actions/workflows/pages.yml)
 
-### Markdown
+ProxyR is a powerful .NET middleware that automatically exposes SQL Server table-valued functions, inline table-valued functions, and views as REST API endpoints. It simplifies the process of creating APIs from your database functions and views with minimal configuration.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+## Why ProxyR?
 
-```markdown
-Syntax highlighted code block
+- **Zero-Code API Creation**: Turn your SQL Server functions into REST endpoints without writing any additional code
+- **Flexible Configuration**: Customize your API endpoints with prefixes, suffixes, and routing options
+- **Built-in Documentation**: Automatic OpenAPI/Swagger documentation generation
+- **Security First**: Built-in parameter exclusion and modification capabilities
+- **Database-Agnostic**: Works with any SQL Server database
+- **Convention-Based**: Simple and consistent naming conventions for automatic API mapping
 
-# Header 1
-## Header 2
-### Header 3
+## Quick Start
 
-- Bulleted
-- List
+### 1. Install the Package
 
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```bash
+dotnet add package ProxyR.Middleware
 ```
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
+### 2. Configure Your Services
 
-### Jekyll Themes
+Add ProxyR to your service collection in `Startup.cs`:
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/abbasmhd/ProxyR/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddProxyR(options => options
+        .UseConnectionString("your_connection_string")
+        .UseDefaultSchema("ProxyR")
+        .UseFunctionNamePrefix("Api_")
+    );
+}
+```
 
-### Support or Contact
+### 3. Create Your Database Objects
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+Follow our [naming conventions](./docs/naming-conventions.html) to automatically expose your database objects as API endpoints:
+
+```sql
+-- Create a view for basic data
+CREATE VIEW ProxyR.Api_Users_View AS
+SELECT Id, Username, Email
+FROM dbo.User;
+
+-- Create a function for searchable grid
+CREATE FUNCTION ProxyR.Api_Users_Grid
+(
+    @SearchTerm NVARCHAR(50) = NULL
+)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT Id, Username, Email
+    FROM dbo.User
+    WHERE (@SearchTerm IS NULL OR Username LIKE '%' + @SearchTerm + '%')
+);
+```
+
+These will automatically be exposed as:
+- `GET /users` - Returns all users
+- `GET /users/grid?searchTerm=john` - Returns filtered users
+
+### 4. Enable the Middleware
+
+Add ProxyR to your application pipeline:
+
+```csharp
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    app.UseProxyR();
+}
+```
+
+## Documentation
+
+Check out our comprehensive documentation:
+
+- [Getting Started Guide](./docs/getting-started.html) - Quick setup and basic usage
+- [Database Setup](./docs/database-setup.html) - How to structure your database
+- [Naming Conventions](./docs/naming-conventions.html) - Recommended naming patterns
+- [Configuration Guide](./docs/configuration.html) - Detailed configuration options
+- [Query Parameters](./docs/query-parameters.html) - Working with parameters and filters
+- [Security Guide](./docs/security.html) - Security best practices and considerations
+- [Examples](./docs/examples.html) - Common use cases and examples
+- [Troubleshooting](./docs/troubleshooting.html) - Common issues and solutions
+- [API Reference](./docs/api-reference.html) - Complete API documentation
+
+## Community
+
+- [GitHub Repository](https://github.com/abbasmhd/ProxyR)
+- [Issue Tracker](https://github.com/abbasmhd/ProxyR/issues)
+- [Contributing Guidelines](./docs/contributing.html)
+
+## License
+
+ProxyR is licensed under the MIT License. See the [LICENSE](https://github.com/abbasmhd/ProxyR/blob/main/LICENSE) file for details.
