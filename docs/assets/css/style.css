@@ -49,6 +49,20 @@ nav .container {
     font-weight: bold;
     color: var(--primary-color);
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logo img {
+    width: 32px;
+    height: 32px;
+    vertical-align: middle;
+}
+
+.logo:hover {
+    text-decoration: none;
+    opacity: 0.9;
 }
 
 nav ul {
