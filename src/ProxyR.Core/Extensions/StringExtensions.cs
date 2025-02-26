@@ -6,6 +6,9 @@ using System.Text.RegularExpressions;
 
 namespace ProxyR.Core.Extensions
 {
+    /// <summary>
+    /// Provides extension methods for string operations.
+    /// </summary>
     public static class StringExtensions
     {
         /// <summary>
