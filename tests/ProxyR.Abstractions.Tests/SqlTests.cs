@@ -159,14 +159,14 @@ namespace ProxyR.Abstractions.Tests
         [InlineData(123, "123")]
         [InlineData(2.5f, "2.5")]
         [InlineData(true, "1")]
-        [InlineData(null, "NULL")]
+        [InlineData((object?)null, "NULL")]
         [InlineData("string with 'single quote'", "'string with ''single quote'''")]
         [InlineData("string with newline\n", "'string with newline\n'")]
         [InlineData("string with carriage return\r", "'string with carriage return\r'")]
         [InlineData("string with tab\t", "'string with tab\t'")]
         [InlineData("string with backslash\\", "'string with backslash\\'")]
         [InlineData("2023-05-01T00:00:00Z", "'2023-05-01T00:00:00Z'")]
-        public void Quote_ShouldReturnCorrectResult(object input, string expected)
+        public void Quote_ShouldReturnCorrectResult(object? input, string expected)
         {
             // Act
             var result = Sql.Quote(input);
