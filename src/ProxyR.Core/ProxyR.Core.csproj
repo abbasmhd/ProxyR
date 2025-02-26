@@ -2,6 +2,43 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <PackageId>Abbasmhd.ProxyR</PackageId>
+    <Version>0.0.1</Version>
+    <VersionSuffix>alpha</VersionSuffix>
+    <Authors>abbasmhd</Authors>
+    <Company>ProxyR</Company>
+    <Description>A powerful .NET middleware that automatically exposes SQL Server functions and views as REST API endpoints. ProxyR simplifies API creation by automatically mapping database objects to RESTful endpoints with minimal configuration.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://abbasmhd.github.io/ProxyR/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/abbasmhd/ProxyR.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>api;rest;sql-server;middleware;dotnet;database;proxy;rest-api;aspnetcore;webapi;database-first;auto-api</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>https://github.com/abbasmhd/ProxyR/releases</PackageReleaseNotes>
+    <PackageIcon>icon.svg</PackageIcon>
+    <PackageIconUrl>https://abbasmhd.github.io/ProxyR/assets/images/icon.svg</PackageIconUrl>
+    <DocumentationUrl>https://github.com/abbasmhd/ProxyR/wiki</DocumentationUrl>
+    <Copyright>Copyright © 2024 ProxyR</Copyright>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <DebugType>portable</DebugType>
+    <IncludeSource>true</IncludeSource>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../docs/assets/images/icon.svg" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
+  </ItemGroup>
 
 </Project>

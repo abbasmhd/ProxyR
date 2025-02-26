@@ -7,6 +7,25 @@ title: NuGet Package Publishing
 
 This guide explains how to publish ProxyR packages to both GitHub Packages and NuGet.org.
 
+## Package Versioning
+
+### Pre-release Packages
+
+ProxyR is currently in pre-release stage, following semantic versioning with alpha/beta designations:
+
+- Current Version: `0.0.1-alpha`
+- Format: `MAJOR.MINOR.PATCH-PRERELEASE`
+
+Pre-release versions indicate that the API is not yet stable and may change without notice.
+
+### Version Strategy
+
+We use Semantic Versioning (SemVer) with pre-release identifiers:
+- MAJOR version (0.y.z) - API is not stable
+- MINOR version (x.y.z) - New features in pre-release
+- PATCH version (x.y.z) - Bug fixes in pre-release
+- Pre-release suffix: -alpha, -beta, -rc.1, etc.
+
 ## Package Configuration
 
 ### 1. Update Project File
@@ -15,8 +34,9 @@ Ensure your `.csproj` files include the necessary package metadata:
 
 ```xml
 <PropertyGroup>
-    <PackageId>ProxyR.Core</PackageId>
-    <Version>1.0.0</Version>
+    <PackageId>Abbasmhd.ProxyR</PackageId>
+    <Version>0.0.1</Version>
+    <VersionSuffix>alpha</VersionSuffix>
     <Authors>abbasmhd</Authors>
     <Company>ProxyR</Company>
     <Description>A powerful .NET middleware that automatically exposes SQL Server functions and views as REST API endpoints. ProxyR simplifies API creation by automatically mapping database objects to RESTful endpoints with minimal configuration.</Description>
@@ -54,58 +74,53 @@ Ensure your `.csproj` files include the necessary package metadata:
 </ItemGroup>
 ```
 
-### 2. Package Versioning
+## Installation
 
-We use Semantic Versioning (SemVer):
-- MAJOR version for incompatible API changes
-- MINOR version for backwards-compatible functionality
-- PATCH version for backwards-compatible bug fixes
+### Installing Pre-release Packages
 
-## Automated Publishing
+From NuGet.org:
+```bash
+dotnet add package Abbasmhd.ProxyR --version 0.0.1-alpha
+```
 
-### Release Process
+From GitHub Packages:
+```bash
+dotnet add package Abbasmhd.ProxyR --version 0.0.1-alpha --source github
+```
 
-1. Create and push a new version tag:
+### Latest Pre-release Version
+
+To always get the latest pre-release version:
+```bash
+dotnet add package Abbasmhd.ProxyR --prerelease
+```
+
+## Publishing Process
+
+### Creating Pre-release Tags
+
+1. Create and push a new pre-release version tag:
    ```bash
-   git tag -a v1.0.0 -m "Release version 1.0.0"
-   git push origin v1.0.0
+   git tag -a v0.0.1-alpha -m "Initial alpha release"
+   git push origin v0.0.1-alpha
    ```
 
 2. The NuGet workflow will automatically:
    - Build and test the solution
-   - Create NuGet packages
+   - Create NuGet packages with pre-release suffix
    - Publish to GitHub Packages
    - Publish to NuGet.org (only for tagged releases)
 
-### Required Secrets
+### Manual Publishing
 
-1. `GITHUB_TOKEN` (automatically provided)
-   - Used for publishing to GitHub Packages
-   - No configuration needed
-
-2. `NUGET_API_KEY`
-   - Required for publishing to NuGet.org
-   - Create at [NuGet.org](https://www.nuget.org)
-   - Add to repository secrets
-
-## Manual Publishing
-
-### Local Package Creation
-
+Local package creation with version suffix:
 ```bash
-dotnet pack --configuration Release
+dotnet pack --configuration Release /p:VersionSuffix=alpha
 ```
 
-### Publishing to NuGet.org
-
+Publishing to NuGet.org:
 ```bash
-dotnet nuget push "bin/Release/ProxyR.Core.1.0.0.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key YOUR_API_KEY
-```
-
-### Publishing to GitHub Packages
-
-```bash
-dotnet nuget push "bin/Release/ProxyR.Core.1.0.0.nupkg" --source "https://nuget.pkg.github.com/abbasmhd/index.json" --api-key YOUR_GITHUB_TOKEN
+dotnet nuget push "bin/Release/Abbasmhd.ProxyR.0.0.1-alpha.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key YOUR_API_KEY
 ```
 
 ## Package Installation
@@ -113,7 +128,7 @@ dotnet nuget push "bin/Release/ProxyR.Core.1.0.0.nupkg" --source "https://nuget.
 ### From NuGet.org
 
 ```bash
-dotnet add package ProxyR.Core
+dotnet add package Abbasmhd.ProxyR
 ```
 
 ### From GitHub Packages
@@ -125,7 +140,7 @@ dotnet add package ProxyR.Core
 
 2. Install the package:
    ```bash
-   dotnet add package ProxyR.Core
+   dotnet add package Abbasmhd.ProxyR
    ```
 
 ## Troubleshooting
