@@ -15,8 +15,8 @@
     <PackageTags>api;rest;sql-server;middleware;dotnet;database;proxy;rest-api;aspnetcore;webapi;database-first;auto-api</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>https://github.com/abbasmhd/ProxyR/releases</PackageReleaseNotes>
-    <PackageIcon>icon.svg</PackageIcon>
-    <PackageIconUrl>https://abbasmhd.github.io/ProxyR/assets/images/icon.svg</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageIconUrl>https://abbasmhd.github.io/ProxyR/assets/images/icon.png</PackageIconUrl>
     <DocumentationUrl>https://github.com/abbasmhd/ProxyR/wiki</DocumentationUrl>
     <Copyright>Copyright © 2024 ProxyR</Copyright>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -26,6 +26,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <DebugType>portable</DebugType>
     <IncludeSource>true</IncludeSource>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
@@ -34,7 +35,7 @@
 
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="/" />
-    <None Include="../../docs/assets/images/icon.svg" Pack="true" PackagePath="/" />
+    <None Include="../../docs/assets/images/icon.png" Pack="true" PackagePath="/" />
   </ItemGroup>
 
   <ItemGroup>

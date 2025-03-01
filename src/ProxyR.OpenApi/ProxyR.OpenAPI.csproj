@@ -6,6 +6,22 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+    <IsPackable>true</IsPackable>
+    <PackageId>Abbasmhd.ProxyR.OpenAPI</PackageId>
+    <Version>0.0.1</Version>
+    <VersionSuffix>alpha</VersionSuffix>
+    <Authors>abbasmhd</Authors>
+    <Company>ProxyR</Company>
+    <Description>OpenAPI/Swagger integration for ProxyR - a powerful .NET middleware that automatically exposes SQL Server functions and views as REST API endpoints.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://abbasmhd.github.io/ProxyR/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/abbasmhd/ProxyR.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>api;rest;sql-server;middleware;dotnet;database;proxy;rest-api;aspnetcore;webapi;database-first;auto-api;swagger;openapi</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>https://github.com/abbasmhd/ProxyR/releases</PackageReleaseNotes>
+    <PackageIcon>icon.png</PackageIcon>
+    <Copyright>Copyright © 2024 ProxyR</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,4 +52,9 @@
       <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
     </ItemGroup>
   </Target>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../docs/assets/images/icon.png" Pack="true" PackagePath="/" />
+  </ItemGroup>
 </Project>
