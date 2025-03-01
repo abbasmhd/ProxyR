@@ -1,10 +1,5 @@
-﻿using Humanizer;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using ProxyR.Abstractions.Builder;
-using ProxyR.Abstractions.Execution;
-using System.ComponentModel;
-using System.Linq.Expressions;
 
 namespace ProxyR.Abstractions.Tests
 {
@@ -127,11 +122,11 @@ namespace ProxyR.Abstractions.Tests
         [Theory]
         [InlineData(new object[] { "value1", 2 }, "'value1', 2")]
         [InlineData(new object[] { "value2", 3, true }, "'value2', 3, 1")]
-        [InlineData(new object[] { null }, "NULL")]
-        public void Values_ShouldReturnCorrectResult(object[] testData, string expected)
+        [InlineData(new object?[] { null }, "NULL")]
+        public void Values_ShouldReturnCorrectResult(object?[] testData, string expected)
         {
             // Arrange
-            var values = (IEnumerable<object>)testData;
+            var values = (IEnumerable<object?>)testData;
 
             // Act
             var result = Sql.Values(values);
@@ -144,7 +139,7 @@ namespace ProxyR.Abstractions.Tests
         public void Values_WhenObject_ShouldReturnCorrectResult()
         {
             // Arrange
-            var values = (IEnumerable<object>)new object[] { new JValue(123), new JValue(2.5f), new JValue("string"), new JValue(true), new JValue(DateTime.Parse("2023-05-01")), new JValue(Guid.Parse("e4279bc6-9e39-486a-9565-284d33b66b84")), new JValue(new byte[] { 0x01, 0x02, 0x03 }) };
+            var values = new object?[] { new JValue(123), new JValue(2.5f), new JValue("string"), new JValue(true), new JValue(DateTime.Parse("2023-05-01")), new JValue(Guid.Parse("e4279bc6-9e39-486a-9565-284d33b66b84")), new JValue(new byte[] { 0x01, 0x02, 0x03 }) };
             var expected = "123, 2.5, 'string', 1, '2023-05-01 00:00:00.000', 'e4279bc6-9e39-486a-9565-284d33b66b84', CONVERT(VARBINARY(MAX), '0x010203', 1)";
 
             // Act
@@ -159,14 +154,14 @@ namespace ProxyR.Abstractions.Tests
         [InlineData(123, "123")]
         [InlineData(2.5f, "2.5")]
         [InlineData(true, "1")]
-        [InlineData(null, "NULL")]
+        [InlineData((object?)null, "NULL")]
         [InlineData("string with 'single quote'", "'string with ''single quote'''")]
         [InlineData("string with newline\n", "'string with newline\n'")]
         [InlineData("string with carriage return\r", "'string with carriage return\r'")]
         [InlineData("string with tab\t", "'string with tab\t'")]
         [InlineData("string with backslash\\", "'string with backslash\\'")]
         [InlineData("2023-05-01T00:00:00Z", "'2023-05-01T00:00:00Z'")]
-        public void Quote_ShouldReturnCorrectResult(object input, string expected)
+        public void Quote_ShouldReturnCorrectResult(object? input, string expected)
         {
             // Act
             var result = Sql.Quote(input);
@@ -193,7 +188,8 @@ namespace ProxyR.Abstractions.Tests
         public void SelectQuoted_ShouldReturnCorrectResult()
         {
             // Arrange
-            var values = new object[] { "value1", 2, 3.5f, null, new JValue(DateTime.Parse("2023-05-01")), new JValue(true), new byte[] { 0x01, 0x02, 0x03 }, Guid.Parse("e4279bc6-9e39-486a-9565-284d33b66b84") };
+            var values = new object?[] { "value1", 2, 3.5f, null, new JValue(DateTime.Parse("2023-05-01")), new JValue(true), new byte[] { 0x01, 0x02, 0x03 }, Guid.Parse("e4279bc6-9e39-486a-9565-284d33b66b84") };
+
             var expected = new[] { "'value1'", "2", "3.5", "NULL", "'2023-05-01 00:00:00.000'", "1", "CONVERT(VARBINARY(MAX), '0x010203', 1)", "'e4279bc6-9e39-486a-9565-284d33b66b84'" };
 
             // Act
@@ -207,17 +203,16 @@ namespace ProxyR.Abstractions.Tests
         }
 
         [Theory]
-        [InlineData("Id", "int", true,  "0", 15, true, "Latin1_General_CI_AS",           "[Id]            INT                                   NULL = 0")]
-        [InlineData("Id", "int", false, "0", 15, true, "Latin1_General_CI_AS",           "[Id]            INT                                   NOT NULL = 0")]
-        [InlineData("Id", "int", null,  "0", 15, true, "Latin1_General_CI_AS",           "[Id]            INT                                        = 0")]
-                                                                                      // "[Id]            int              = 0"
-        [InlineData("Id", "int", true,  "0", 15, false, "",                              "[Id] INT  NULL = 0")]
-        [InlineData("Id", "varchar(Max)",  true,  "", 15, true,  "Latin1_General_CI_AS", "[Id]            VARCHAR(MAX)     COLLATE Latin1_General_CI_AS NULL = ''")]
-        [InlineData("Id", "varchar(100)",  true,  "", 15, true,  "Latin1_General_CI_AS", "[Id]            VARCHAR(100)     COLLATE Latin1_General_CI_AS NULL = ''")]
-        [InlineData("Id", "nvarchar(100)", true,  "", 15, true,  "Latin1_General_CI_AS", "[Id]            NVARCHAR(100)    COLLATE Latin1_General_CI_AS NULL = ''")]
-        [InlineData("Id", "nvarchar(100)", false, "", 15, false, "Latin1_General_CI_AS", "[Id] NVARCHAR(100) COLLATE Latin1_General_CI_AS NOT NULL = ''")]
-        [InlineData("Id", "nvarchar(100)", false, "", 15, false, "",                     "[Id] NVARCHAR(100) COLLATE DATABASE_DEFAULT NOT NULL = ''")]
-        public void ColumnDefinition_ReturnsCorrectResult(string columnName, string type, bool? isNullable, string defaultExpression, int columnNamePadding, bool doPadding, string collation, string expected)
+        [InlineData("Id", "int",           true,  "0", 15, true,  "Latin1_General_CI_AS", "[Id]            INT                                   NULL = 0")]
+        [InlineData("Id", "int",           false, "0", 15, true,  "Latin1_General_CI_AS", "[Id]            INT                                   NOT NULL = 0")]
+        [InlineData("Id", "int",           null,  "0", 15, true,  "Latin1_General_CI_AS", "[Id]            INT                                        = 0")]
+        [InlineData("Id", "int",           true,  "0", 15, false, "",                     "[Id] INT  NULL = 0")]
+        [InlineData("Id", "varchar(Max)",  true,  "",  15, true,  "Latin1_General_CI_AS", "[Id]            VARCHAR(MAX)     COLLATE Latin1_General_CI_AS NULL = ''")]
+        [InlineData("Id", "varchar(100)",  true,  "",  15, true,  "Latin1_General_CI_AS", "[Id]            VARCHAR(100)     COLLATE Latin1_General_CI_AS NULL = ''")]
+        [InlineData("Id", "nvarchar(100)", true,  "",  15, true,  "Latin1_General_CI_AS", "[Id]            NVARCHAR(100)    COLLATE Latin1_General_CI_AS NULL = ''")]
+        [InlineData("Id", "nvarchar(100)", false, "",  15, false, "Latin1_General_CI_AS", "[Id] NVARCHAR(100) COLLATE Latin1_General_CI_AS NOT NULL = ''")]
+        [InlineData("Id", "nvarchar(100)", false, "",  15, false, "",                     "[Id] NVARCHAR(100) COLLATE DATABASE_DEFAULT NOT NULL = ''")]
+        public void ColumnDefinition_ReturnsCorrectResult(string columnName, string type, bool? isNullable, string defaultExpression, int columnNamePadding, bool doPadding, string? collation, string expected)
         {
             // Act
             string result = new ColumnDefinitionBuilder(columnName, type)

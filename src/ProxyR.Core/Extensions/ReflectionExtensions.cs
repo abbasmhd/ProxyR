@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace ProxyR.Core.Extensions
 {
+    /// <summary>
+    /// Provides extension methods for reflection-related operations.
+    /// </summary>
     public static class ReflectionExtensions
     {
         /// <summary>

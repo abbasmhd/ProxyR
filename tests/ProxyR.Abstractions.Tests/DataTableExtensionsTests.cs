@@ -126,7 +126,7 @@ namespace ProxyR.Abstractions.Tests
             public int Id { get; set; }
             [MaxLength(50)]
             [Required]
-            public string Name { get; set; }
+            public string? Name { get; set; }
             public int Age { get; set; }
         }
     }
