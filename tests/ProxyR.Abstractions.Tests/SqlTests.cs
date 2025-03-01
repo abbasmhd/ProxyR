@@ -203,13 +203,13 @@ namespace ProxyR.Abstractions.Tests
         }
 
         [Theory]
-        [InlineData("Id", "int",           true,  "0", 15, true,  "Latin1_General_CI_AS", "[Id] INT NULL = 0")]
-        [InlineData("Id", "int",           false, "0", 15, true,  "Latin1_General_CI_AS", "[Id] INT NOT NULL = 0")]
-        [InlineData("Id", "int",           null,  "0", 15, true,  "Latin1_General_CI_AS", "[Id] INT = 0")]
+        [InlineData("Id", "int",           true,  "0", 15, true,  "Latin1_General_CI_AS", "[Id]            INT                                   NULL = 0")]
+        [InlineData("Id", "int",           false, "0", 15, true,  "Latin1_General_CI_AS", "[Id]            INT                                   NOT NULL = 0")]
+        [InlineData("Id", "int",           null,  "0", 15, true,  "Latin1_General_CI_AS", "[Id]            INT                                        = 0")]
         [InlineData("Id", "int",           true,  "0", 15, false, "",                     "[Id] INT  NULL = 0")]
-        [InlineData("Id", "varchar(Max)",  true,  "",  15, true,  "Latin1_General_CI_AS", "[Id] VARCHAR(MAX)  COLLATE Latin1_General_CI_AS NULL = ''")]
-        [InlineData("Id", "varchar(100)",  true,  "",  15, true,  "Latin1_General_CI_AS", "[Id] VARCHAR(100)  COLLATE Latin1_General_CI_AS NULL = ''")]
-        [InlineData("Id", "nvarchar(100)", true,  "",  15, true,  "Latin1_General_CI_AS", "[Id] NVARCHAR(100) COLLATE Latin1_General_CI_AS NULL = ''")]
+        [InlineData("Id", "varchar(Max)",  true,  "",  15, true,  "Latin1_General_CI_AS", "[Id]            VARCHAR(MAX)     COLLATE Latin1_General_CI_AS NULL = ''")]
+        [InlineData("Id", "varchar(100)",  true,  "",  15, true,  "Latin1_General_CI_AS", "[Id]            VARCHAR(100)     COLLATE Latin1_General_CI_AS NULL = ''")]
+        [InlineData("Id", "nvarchar(100)", true,  "",  15, true,  "Latin1_General_CI_AS", "[Id]            NVARCHAR(100)    COLLATE Latin1_General_CI_AS NULL = ''")]
         [InlineData("Id", "nvarchar(100)", false, "",  15, false, "Latin1_General_CI_AS", "[Id] NVARCHAR(100) COLLATE Latin1_General_CI_AS NOT NULL = ''")]
         [InlineData("Id", "nvarchar(100)", false, "",  15, false, "",                     "[Id] NVARCHAR(100) COLLATE DATABASE_DEFAULT NOT NULL = ''")]
         public void ColumnDefinition_ReturnsCorrectResult(string columnName, string type, bool? isNullable, string defaultExpression, int columnNamePadding, bool doPadding, string? collation, string expected)
