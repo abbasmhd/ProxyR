@@ -7,6 +7,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 
@@ -139,8 +140,10 @@ namespace ProxyR.Abstractions.Execution
             command.CommandText = sql;
 
             // Does the command look like a stored procedure?
-            // Does it have any spaces inside it?
-            if (!sql.Contains(" "))
+            // Only treat it as a stored-proc name when the whole text is a
+            // valid SQL object identifier — a spaceless statement such as
+            // "SELECT" must not be misrouted (#71).
+            if (IsStoredProcedureName(sql))
             {
                 command.CommandType = CommandType.StoredProcedure;
             }
@@ -181,6 +184,32 @@ namespace ProxyR.Abstractions.Execution
             }
 
             return command;
+        }
+
+        /// <summary>
+        /// Determines whether the SQL text is a bare stored-procedure name
+        /// (an optional bracketed, multi-part identifier) rather than an
+        /// ad-hoc statement. Unbracketed reserved statement keywords are
+        /// treated as statements.
+        /// </summary>
+        public static bool IsStoredProcedureName(string sql)
+        {
+            if (String.IsNullOrWhiteSpace(sql))
+            {
+                return false;
+            }
+
+            var candidate = sql.Trim();
+
+            // Reserved words cannot be unbracketed object names —
+            // treat them as ad-hoc statements.
+            var firstWord = Regex.Match(candidate, "^[A-Za-z]+").Value.ToUpperInvariant();
+            if (firstWord.IsIn("SELECT", "INSERT", "UPDATE", "DELETE", "EXEC", "EXECUTE", "DECLARE", "SET", "IF", "WHILE", "BEGIN", "WITH", "TRUNCATE", "MERGE", "CREATE", "ALTER", "DROP", "PRINT"))
+            {
+                return false;
+            }
+
+            return Regex.IsMatch(candidate, @"^(\[[^\]]+\]|\w+)(\s*\.\s*(\[[^\]]+\]|\w+))*$", RegexOptions.CultureInvariant);
         }
     }
 }
