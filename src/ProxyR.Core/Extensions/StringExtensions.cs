@@ -150,7 +150,7 @@ namespace ProxyR.Core.Extensions
         /// </summary>
         public static string ToUpperFirst(this string source)
         {
-            if (!string.IsNullOrWhiteSpace(source))
+            if (string.IsNullOrWhiteSpace(source))
                 return source;
 
             if (!char.IsLetter(source[0]))
