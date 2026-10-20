@@ -1,0 +1,26 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+
+The following sources were used:
+   https://api.nuget.org/v3/index.json
+   C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\
+
+Project `ProxyR.Core` has the following vulnerable packages
+   [net8.0]: 
+   Transitive Package               Resolved   Severity   Advisory URL                                     
+   > Microsoft.Build.Tasks.Git      8.0.0      Moderate   https://github.com/advisories/GHSA-23fw-v26w-5fgq
+
+The given project `ProxyR.Middleware` has no vulnerable packages given the current sources.
+The given project `ProxyR.Abstractions` has no vulnerable packages given the current sources.
+The given project `WebAPI` has no vulnerable packages given the current sources.
+The given project `Benchmark` has no vulnerable packages given the current sources.
+The given project `ProxyR.OpenAPI` has no vulnerable packages given the current sources.
+The given project `ProxyR.Core.Tests` has no vulnerable packages given the current sources.
+Project `ProxyR.Database` has the following vulnerable packages
+   [net8.0]: 
+   Transitive Package                           Resolved   Severity   Advisory URL                                     
+   > Microsoft.IdentityModel.JsonWebTokens      6.24.0     Moderate   https://github.com/advisories/GHSA-59j7-ghrg-fj52
+   > System.IdentityModel.Tokens.Jwt            6.24.0     Moderate   https://github.com/advisories/GHSA-59j7-ghrg-fj52
+
+The given project `ProxyR.Api.Tests.Integration` has no vulnerable packages given the current sources.
+The given project `ProxyR.Abstractions.Tests` has no vulnerable packages given the current sources.

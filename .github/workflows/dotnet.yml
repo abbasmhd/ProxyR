@@ -31,6 +31,16 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
+    - name: Check for vulnerable packages
+      run: |
+        dotnet list package --vulnerable --include-transitive > vulnerable.txt || true
+        cat vulnerable.txt
+        # Fail on Critical/High advisories; Moderate/Low are reported but tolerated.
+        if grep -E "^\s+>" vulnerable.txt | grep -E "Critical|High"; then
+          echo "::error::Critical/High vulnerable NuGet packages detected — see log above"
+          exit 1
+        fi
+
     - name: Build
       run: dotnet build --configuration Release
 
