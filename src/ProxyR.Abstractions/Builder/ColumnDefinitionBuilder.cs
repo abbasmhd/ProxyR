@@ -27,8 +27,14 @@ namespace ProxyR.Abstractions.Builder
         /// </returns>
         public ColumnDefinitionBuilder(string columnName, string type)
         {
+            // Guard the type: it is interpolated verbatim into the DDL (#61).
+            if (type == null || !System.Text.RegularExpressions.Regex.IsMatch(type, "^[A-Za-z0-9_(),\\s]+$"))
+            {
+                throw new ArgumentException($"Column type syntax [{type}] contains characters that are not permitted.", nameof(type));
+            }
+
             _columnName = columnName;
-            _type = type.ToUpper();
+            _type = type.ToUpperInvariant();
         }
 
         /// <summary>
@@ -92,7 +98,7 @@ namespace ProxyR.Abstractions.Builder
         /// <returns>A string representation of a column definition.</returns>
         public string Build()
         {
-            var columnPart = $"[{_columnName}]".PadRight(_doPadding ? _columnNamePadding : 0);
+            var columnPart = $"[{Sql.Sanitize(_columnName)}]".PadRight(_doPadding ? _columnNamePadding : 0);
 
             var collationPart = String.Empty;
 

@@ -4,6 +4,7 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ProxyR.Abstractions.Commands
@@ -119,11 +120,44 @@ namespace ProxyR.Abstractions.Commands
         /// <returns>The result of the query.</returns>
         public static DbResult CreateTableColumn(string connectionString, string tableName, string fieldName, string typeSyntax, bool isNullable = true, object defaultValue = null, string schemaName = null)
         {
-            var nullablePart = isNullable ? "NULL" : "NOT NULL";
-            var defaultPart = defaultValue != null ? $"= {defaultValue.ToString()}" : string.Empty;
+            var sql = BuildCreateTableColumnSql(tableName, fieldName, typeSyntax, isNullable, defaultValue, schemaName);
+            return Db.Query(connectionString, sql);
+        }
 
-            return Db.Query(connectionString,
-                $"ALTER TABLE [{schemaName ?? "dbo"}].[{tableName}] ADD [{fieldName}] {typeSyntax} {nullablePart} {defaultPart}");
+        /// <summary>
+        /// Builds the ALTER TABLE statement for <see cref="CreateTableColumn"/>.
+        /// Identifiers are sanitized; typeSyntax must match a simple SQL type pattern;
+        /// defaultValue must be a primitive (quoted via <see cref="Sql.Quote"/>).
+        /// NOTE: identifiers here are sanitized character-wise — treat all inputs as trusted (#61).
+        /// </summary>
+        public static string BuildCreateTableColumnSql(string tableName, string fieldName, string typeSyntax, bool isNullable = true, object defaultValue = null, string schemaName = null)
+        {
+            // Guard the type-syntax: it is interpolated directly into the DDL.
+            if (typeSyntax == null || !Regex.IsMatch(typeSyntax, "^[A-Za-z0-9_(),\\s]+$"))
+            {
+                throw new ArgumentException($"Column type syntax [{typeSyntax}] contains characters that are not permitted.", nameof(typeSyntax));
+            }
+
+            // Guard the default-value: only primitives are permitted, and they are quoted.
+            if (defaultValue != null && defaultValue.GetType().IsPrimitive == false && defaultValue is not string && defaultValue is not Guid && defaultValue is not DateTime)
+            {
+                throw new ArgumentException($"Column default values of type [{defaultValue.GetType().Name}] are not supported.", nameof(defaultValue));
+            }
+
+            var nullablePart = isNullable ? "NULL" : "NOT NULL";
+            var defaultPart = defaultValue != null ? $"= {Sql.Quote(defaultValue)}" : string.Empty;
+
+            var targetTable = FormatTwoPartName(schemaName ?? "dbo", tableName);
+
+            return $"ALTER TABLE {targetTable} ADD [{Sql.Sanitize(fieldName)}] {typeSyntax} {nullablePart} {defaultPart}".TrimEnd();
+        }
+
+        /// <summary>
+        /// Formats and sanitizes a two-part SQL object name ([schema].[name]).
+        /// </summary>
+        public static string FormatTwoPartName(string schemaName, string objectName)
+        {
+            return $"[{Sql.Sanitize(schemaName)}].[{Sql.Sanitize(objectName)}]";
         }
 
         /// <summary>
