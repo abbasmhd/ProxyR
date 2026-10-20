@@ -173,5 +173,32 @@ namespace ProxyR.Middleware
             return this;
         }
 
+        /// <summary>
+        ///     Sets the maximum value accepted for $take / "take" paging.
+        ///     Protects the database from unbounded result-sets (#67).
+        /// </summary>
+        public ProxyROptionsBuilder UseMaxTake(int maxTake)
+        {
+            if (maxTake < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxTake), maxTake, "MaxTake must be at least 1.");
+            }
+
+            Options.MaxTake = maxTake;
+
+            return this;
+        }
+
+        /// <summary>
+        ///     Controls whether the "loadAll" request flag is honored.
+        ///     Default is true; set to false to always enforce paging.
+        /// </summary>
+        public ProxyROptionsBuilder AllowLoadAll(bool allow = true)
+        {
+            Options.AllowLoadAll = allow;
+
+            return this;
+        }
+
     }
 }

@@ -59,5 +59,20 @@ namespace ProxyR.Abstractions
         ///     NOTE: These should be added by the options builder.
         /// </summary>
         public ICollection<string> ExcludedParameters { get; set; } = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+
+        /// <summary>
+        ///     The maximum value accepted for $take / "take" paging.
+        ///     When null, no limit is applied. It is recommended to configure
+        ///     a limit in production to prevent resource exhaustion.
+        ///     Default is null (unbounded).
+        /// </summary>
+        public int? MaxTake { get; set; }
+
+        /// <summary>
+        ///     Whether the "loadAll" request flag is honored. When false,
+        ///     the flag is ignored and paging is always applied.
+        ///     Default is true (existing behavior).
+        /// </summary>
+        public bool AllowLoadAll { get; set; } = true;
     }
 }
