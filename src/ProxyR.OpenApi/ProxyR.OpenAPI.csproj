@@ -36,6 +36,7 @@
 
 
   <ItemGroup>
+    <InternalsVisibleTo Include="ProxyR.OpenAPI.Tests" />
     <ProjectReference Include="..\ProxyR.Abstractions\ProxyR.Abstractions.csproj">
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
       <IncludeAssets>ProxyR.Abstractions.dll</IncludeAssets>
