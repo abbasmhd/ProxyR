@@ -70,8 +70,7 @@ namespace ProxyR.OpenAPI.DocumentFilters
                         WHERE object_id = OBJECT_ID('[{Sql.Sanitize(schemaName)}].[{Sql.Sanitize(functionName)}]')
                         ORDER BY column_id");
 
-                var pathPart = functionName.Remove(0, prefix.Length);
-                pathPart = pathPart.Remove(prefix.Length - suffix.Length, suffix.Length);
+                var pathPart = ComputePathPart(functionName, prefix, suffix);
 
                 // ProxyR endpoinmt Path/URI.
                 var pathName = pathPart.Replace('_', '/').Trim('/').ToLowerInvariant();
@@ -227,6 +226,28 @@ namespace ProxyR.OpenAPI.DocumentFilters
                 var schemaListName = $"{String.Join("", nameSegments)}List{suffix}";
                 return (schemaModelName, schemaListName);
             }
+        }
+
+        /// <summary>
+        /// Strips the configured prefix and suffix from a database function name,
+        /// leaving the URL path part. Exposed for testing (#63).
+        /// </summary>
+        internal static string ComputePathPart(string functionName, string prefix, string suffix)
+        {
+            prefix ??= String.Empty;
+            suffix ??= String.Empty;
+
+            var pathPart = functionName.Remove(0, prefix.Length);
+
+            // Remove the suffix from the END of the name — the previous
+            // implementation used prefix.Length - suffix.Length as the
+            // start-index, truncating the wrong characters (#63).
+            if (suffix.Length > 0 && pathPart.Length >= suffix.Length)
+            {
+                pathPart = pathPart.Remove(pathPart.Length - suffix.Length, suffix.Length);
+            }
+
+            return pathPart;
         }
     }
 }
