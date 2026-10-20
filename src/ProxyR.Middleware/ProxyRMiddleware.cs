@@ -126,7 +126,9 @@ namespace ProxyR.Middleware
 
             // Override query-parameters from the query-String.
             StatementBuilder.GetODataQueryStringParameters(context.Request.Query, queryParams);
-            _logger.LogInformation($"Query-Params: {JsonConvert.SerializeObject(queryParams)}");
+            // Log parameter names only (never values): query parameters and
+            // overridden parameters can contain sensitive data (#60).
+            _logger.LogDebug($"Query-Params: {string.Join(", ", queryParams.UserData.Keys)}; Filter: {queryParams.Filter != null}; Sort: {queryParams.Sort.Count}; Take: {queryParams.Take}; Skip: {queryParams.Skip}");
 
             // Get the parameters from the User-Data.
             var paramBuilder = new ParameterBuilder();
@@ -199,8 +201,10 @@ namespace ProxyR.Middleware
 
             // Get the SQL generated.
             var sql = sqlBuilder.ToString();
-            _logger.LogInformation($"SQL Parameters:\n{JsonConvert.SerializeObject(paramBuilder.Parameters.Values.Select(x => new { Type = x.GetType().Name, Value = x }).ToArray())}");
-            _logger.LogInformation($"SQL Generated:\n{sql}");
+            // Log parameter names and types only (never values): parameters can
+            // contain sensitive data, e.g. server-side overridden values (#60).
+            _logger.LogDebug($"SQL Parameters: {string.Join(", ", paramBuilder.Parameters.Keys)}");
+            _logger.LogDebug($"SQL Generated:\n{sql}");
 
             // Run the SQL.
             var results = await Db.Query(connectionString: connectionString, sql: sql, parameters: paramBuilder.Parameters.Values.ToArray())
