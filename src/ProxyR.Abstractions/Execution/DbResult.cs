@@ -309,11 +309,21 @@ namespace ProxyR.Abstractions.Execution
                             hasDiscoveredColumnTypes = true;
                         }
 
-                        // Read the values into the row, and yield the row, without adding to the table.
-                        var row = table.NewRow();
-                        reader.GetValues(row.ItemArray);
+                    // Read the values into the row, and yield the row.
+                    // GetValues into row.ItemArray would write into a throwaway
+                    // copy of the values-array — the empty-row bug (#64).
+                    // The row is deliberately NOT added to the table: this is a
+                    // streaming enumerator, rows must not be buffered (#77 review).
+                    var row = table.NewRow();
+                    var values = new object[reader.FieldCount];
+                    reader.GetValues(values);
 
-                        yield return row;
+                    for (var fieldIndex = 0; fieldIndex < values.Length; fieldIndex++)
+                    {
+                        row[fieldIndex] = values[fieldIndex];
+                    }
+
+                    yield return row;
                     }
                 }
             }
