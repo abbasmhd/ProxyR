@@ -4,6 +4,7 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ProxyR.Abstractions.Commands
@@ -119,11 +120,46 @@ namespace ProxyR.Abstractions.Commands
         /// <returns>The result of the query.</returns>
         public static DbResult CreateTableColumn(string connectionString, string tableName, string fieldName, string typeSyntax, bool isNullable = true, object defaultValue = null, string schemaName = null)
         {
-            var nullablePart = isNullable ? "NULL" : "NOT NULL";
-            var defaultPart = defaultValue != null ? $"= {defaultValue.ToString()}" : string.Empty;
+            var sql = BuildCreateTableColumnSql(tableName, fieldName, typeSyntax, isNullable, defaultValue, schemaName);
+            return Db.Query(connectionString, sql);
+        }
 
-            return Db.Query(connectionString,
-                $"ALTER TABLE [{schemaName ?? "dbo"}].[{tableName}] ADD [{fieldName}] {typeSyntax} {nullablePart} {defaultPart}");
+        /// <summary>
+        /// Builds the ALTER TABLE statement for <see cref="CreateTableColumn"/>.
+        /// Identifiers are sanitized; typeSyntax must match a simple SQL type pattern;
+        /// defaultValue must be a primitive (quoted via <see cref="Sql.Quote"/>).
+        /// NOTE: identifiers here are sanitized character-wise — treat all inputs as trusted (#61).
+        /// </summary>
+        public static string BuildCreateTableColumnSql(string tableName, string fieldName, string typeSyntax, bool isNullable = true, object defaultValue = null, string schemaName = null)
+        {
+            // Guard the type-syntax: it is interpolated directly into the DDL.
+            if (typeSyntax == null || !Regex.IsMatch(typeSyntax, "^[A-Za-z0-9_(),\\s]+$"))
+            {
+                throw new ArgumentException($"Column type syntax [{typeSyntax}] contains characters that are not permitted.", nameof(typeSyntax));
+            }
+
+            // Guard the default-value: only primitives, decimal and strings
+            // are permitted, and they are quoted.
+            var defaultValueType = defaultValue?.GetType();
+            if (defaultValue != null && defaultValueType?.IsPrimitive == false && defaultValue is not string && defaultValue is not Guid && defaultValue is not DateTime && defaultValue is not decimal)
+            {
+                throw new ArgumentException($"Column default values of type [{defaultValueType?.Name}] are not supported.", nameof(defaultValue));
+            }
+
+            var nullablePart = isNullable ? "NULL" : "NOT NULL";
+            var defaultPart = defaultValue != null ? $"= {Sql.Quote(defaultValue)}" : string.Empty;
+
+            var targetTable = FormatTwoPartName(schemaName ?? "dbo", tableName);
+
+            return $"ALTER TABLE {targetTable} ADD [{Sql.Sanitize(fieldName)}] {typeSyntax} {nullablePart} {defaultPart}".TrimEnd();
+        }
+
+        /// <summary>
+        /// Formats and sanitizes a two-part SQL object name ([schema].[name]).
+        /// </summary>
+        public static string FormatTwoPartName(string schemaName, string objectName)
+        {
+            return $"[{Sql.Sanitize(schemaName)}].[{Sql.Sanitize(objectName)}]";
         }
 
         /// <summary>
@@ -136,16 +172,20 @@ namespace ProxyR.Abstractions.Commands
         public static async Task CreateNonExistingColumnsAsync(string connectionString, DataTable dataTable, string tableName)
         {
             // Add columns that do not exist.
+            // Compare SANITIZED names: CreateTableColumn creates columns
+            // under their sanitized identifier, so the existence check must
+            // match that (#74 review).
             var columnNameTable = await GetColumns(connectionString, tableName).ToDataTableAsync().ConfigureAwait(false);
             var columnNames = columnNameTable
                 .Rows
                 .Cast<DataRow>()
                 .Select(row => (string)row["COLUMN_NAME"])
+                .Select(Sql.Sanitize)
                 .ToArray();
 
             // Get any columns that do not exist in the destination table.
             var nonExistingColumns = dataTable.Columns.Cast<DataColumn>()
-                .Where(c => !columnNames.Contains(c.ColumnName, StringComparer.OrdinalIgnoreCase))
+                .Where(c => !columnNames.Contains(Sql.Sanitize(c.ColumnName), StringComparer.OrdinalIgnoreCase))
                 .ToArray();
 
             // Create the non-existing columns on the table.

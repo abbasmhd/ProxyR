@@ -192,11 +192,11 @@ namespace ProxyR.Abstractions.Builder
             StartNewLine("MERGE");
             Indent(targetClause =>
             {
-                targetClause.StartNewLine($"{targetTable} AS TARGET");
+                targetClause.StartNewLine($"{FormatTableName(targetTable)} AS TARGET");
             });
 
             StartNewLine("USING");
-            Indent(sourceClause => sourceClause.StartNewLine($"{sourceTable} AS SOURCE"));
+            Indent(sourceClause => sourceClause.StartNewLine($"{FormatTableName(sourceTable)} AS SOURCE"));
 
             StartNewLine("ON");
             Indent(onClause =>
@@ -402,7 +402,9 @@ namespace ProxyR.Abstractions.Builder
         public SqlBuilder AddColumn(string tableName, string columnName, string type, bool isNullable = false)
         {
             var columnDefinition = new ColumnDefinitionBuilder(columnName, type).IsNullable(isNullable);
-            Line($"ALTER TABLE {tableName} ADD {columnDefinition.Build()};");
+            // ColumnDefinitionBuilder.Build() already emits the sanitized
+            // column name — do not emit it twice (#74 review).
+            Line($"ALTER TABLE {FormatTableName(tableName)} ADD {columnDefinition.Build()};");
             return this;
         }
 
@@ -416,10 +418,14 @@ namespace ProxyR.Abstractions.Builder
         {
             foreach (var column in table.Columns.Cast<DataColumn>())
             {
+                // Check and create under the SANITIZED name, matching what
+                // AddColumn / ColumnDefinitionBuilder will emit (#74 review).
+                var sanitizedColumnName = Sql.Sanitize(column.ColumnName);
+
                 ColumnNotExists(
-                    column.ColumnName,
+                    sanitizedColumnName,
                     tableName,
-                    ifSegment => ifSegment.AddColumn(tableName, column.ColumnName, DbTypes.GetDbTypeSyntax(column.DataType), column.AllowDBNull));
+                    ifSegment => ifSegment.AddColumn(tableName, sanitizedColumnName, DbTypes.GetDbTypeSyntax(column.DataType), column.AllowDBNull));
             }
 
             return this;
@@ -433,7 +439,7 @@ namespace ProxyR.Abstractions.Builder
         /// <returns>The SqlBuilder instance.</returns>
         public SqlBuilder CreateTable(string tableName, params string[] columnDefinitions)
         {
-            Line($"CREATE TABLE {tableName} (");
+            Line($"CREATE TABLE {FormatTableName(tableName)} (");
             Indent(columnBlock => columnBlock.Line(Sql.CommaLines(columnDefinitions)));
             Line(");");
             return this;
@@ -477,8 +483,8 @@ namespace ProxyR.Abstractions.Builder
         /// <returns>The SqlBuilder instance.</returns>
         public SqlBuilder DropConstraint(string constraintName, string tableName)
         {
-            Line($"ALTER TABLE {tableName}");
-            Line($"DROP CONSTRAINT [{constraintName}];");
+            Line($"ALTER TABLE {FormatTableName(tableName)}");
+            Line($"DROP CONSTRAINT [{Sql.Sanitize(constraintName)}];");
             return this;
         }
 
@@ -491,9 +497,9 @@ namespace ProxyR.Abstractions.Builder
         /// <returns>The SqlBuilder instance.</returns>
         public SqlBuilder AddPrimaryKeyConstraint(string constraintName, string tableName, params string[] columnNames)
         {
-            Line($"ALTER TABLE {tableName}");
-            Line($"ADD CONSTRAINT [{constraintName}] PRIMARY KEY (");
-            Indent(block => block.Line(Sql.ColumnLines(columnNames)));
+            Line($"ALTER TABLE {FormatTableName(tableName)}");
+            Line($"ADD CONSTRAINT [{Sql.Sanitize(constraintName)}] PRIMARY KEY (");
+            Indent(block => block.Line(Sql.ColumnLines(columnNames.Select(Sql.Sanitize).ToArray())));
             Line(");");
             return this;
         }
@@ -534,7 +540,7 @@ namespace ProxyR.Abstractions.Builder
         /// <returns>The SqlBuilder instance.</returns>
         public SqlBuilder DropTableIfExists(string tableName)
         {
-            Line($"DROP TABLE IF EXISTS {tableName};");
+            Line($"DROP TABLE IF EXISTS {FormatTableName(tableName)};");
             return this;
         }
 
@@ -642,6 +648,17 @@ namespace ProxyR.Abstractions.Builder
                 Line($"-- {line}");
             }
             return this;
+        }
+
+        /// <summary>
+        /// Formats a table name as a sanitized two-part identifier ([schema].[name]),
+        /// accepting either "name" or "schema.name" input. Identifiers that originate
+        /// from untrusted sources must still be treated with care (#61).
+        /// </summary>
+        private static string FormatTableName(string tableName)
+        {
+            var parts = Sql.GetSchemaAndObjectName(tableName);
+            return $"[{Sql.Sanitize(parts.Schema)}].[{Sql.Sanitize(parts.Object)}]";
         }
 
         /// <summary>
