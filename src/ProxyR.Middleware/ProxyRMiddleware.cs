@@ -189,8 +189,9 @@ namespace ProxyR.Middleware
 
                 _logger.LogWarning($"DbFunction [{functionSchema}].[{functionName}] did not have required parameter {requiredParameterName} provided.");
 
+                // ProxyR has decided the response (404): do not continue
+                // the pipeline — later middleware could overwrite it (#70).
                 context.Response.StatusCode = 404;
-                await _next(context).ConfigureAwait(false);
 
                 return;
             }
