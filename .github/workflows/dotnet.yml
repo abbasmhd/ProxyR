@@ -31,6 +31,22 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
+    - name: Check for vulnerable packages
+      run: |
+        # The command exits non-zero when advisories are found, hence || true —
+        # but an empty file means the scan itself failed, which must not pass.
+        dotnet list package --vulnerable --include-transitive > vulnerable.txt || true
+        if [ ! -s vulnerable.txt ]; then
+          echo "::error::Vulnerability scan produced no output — failing closed"
+          exit 1
+        fi
+        cat vulnerable.txt
+        # Fail on Critical/High advisories; Moderate/Low are reported but tolerated.
+        if grep -E "^\s+>" vulnerable.txt | grep -E "Critical|High"; then
+          echo "::error::Critical/High vulnerable NuGet packages detected — see log above"
+          exit 1
+        fi
+
     - name: Build
       run: dotnet build --configuration Release
 
