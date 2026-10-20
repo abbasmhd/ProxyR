@@ -22,13 +22,13 @@ Add the ProxyR middleware to your ASP.NET Core project:
 
 ```bash
 # Install latest pre-release version
-dotnet add package Abbasmhd.ProxyR --prerelease
+dotnet add package Abbasmhd.ProxyR.Middleware --prerelease
 
 # Or install specific version
-dotnet add package Abbasmhd.ProxyR --version 0.0.1-alpha
+dotnet add package Abbasmhd.ProxyR.Middleware --version 0.0.1-alpha
 ```
 
-Note: The package is published under the namespace `Abbasmhd.ProxyR` to follow NuGet naming conventions. This is currently a pre-release version (0.0.1-alpha) and the API may change without notice.
+Note: The package is published as `Abbasmhd.ProxyR.Middleware` to follow NuGet naming conventions. This is currently a pre-release version (0.0.1-alpha) and the API may change without notice.
 
 ### Basic Configuration
 
@@ -114,7 +114,26 @@ if (env.IsDevelopment())
 - Parameter exclusion
 - Parameter override capabilities
 - Connection string configuration options
-- Schema-based access control
+
+### Security Requirements (read this before deploying)
+
+ProxyR itself performs **no authentication or authorization**. Any HTTP request
+whose path resolves to a configured database object will be executed against the
+configured connection string.
+
+- You MUST protect ProxyR endpoints with your own authentication/authorization
+  middleware (e.g. `app.UseAuthentication()`, `app.UseAuthorization()`, routing
+  policies, or IP restrictions) before exposing them.
+- The database account used by the connection string should be least-privilege:
+  it only needs `SELECT` on the functions/views you intend to expose.
+- Only functions/views whose names match the configured `Prefix`/`Suffix` are
+  exposed — choose prefixes that cannot match unintended objects.
+- The "schema" in the URL is **routing, not access control**: it selects which
+  SQL schema to look in, it does not restrict who can call it.
+- Use `OverrideParameter` for server-side trusted values (e.g. current user
+  identity) so callers cannot supply them; combine with `RequireParameter` to
+  reject requests that omit required inputs.
+- Consider setting `MaxTake` to bound result-set sizes.
 
 ## Contributing
 
