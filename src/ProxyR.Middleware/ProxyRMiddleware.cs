@@ -120,6 +120,40 @@ namespace ProxyR.Middleware
             }
 
             // Get it into an interrogatable JSON object (JObject).
+            // Everything from here on works with client-supplied input:
+            // validation failures are mapped to HTTP 400 (#65), so bad
+            // filters / selects / bodies produce 400s instead of 500s.
+            try
+            {
+                await ProcessRequestAsync(context, requestBody, connectionString, functionSchema, functionName, objectType).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (
+                ex is Newtonsoft.Json.JsonException ||
+                ex is InvalidOperationException ||
+                ex is NotSupportedException ||
+                ex is InvalidCastException ||
+                ex is FormatException)
+            {
+                _logger.LogWarning(ex, "ProxyR rejected a request as invalid.");
+                context.Response.StatusCode = 400;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync($"Invalid request: {ex.Message}").ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Processes a request for an existing database function or view,
+        /// after the object has been confirmed to exist.
+        /// </summary>
+        private async Task ProcessRequestAsync(
+            HttpContext context,
+            string requestBody,
+            string connectionString,
+            string functionSchema,
+            string functionName,
+            string objectType)
+        {
+            // Get it into an interrogatable JSON object (JObject).
             var queryParams = requestBody != null
               ? JsonConvert.DeserializeObject<ProxyRQueryParameters>(requestBody)
               : new ProxyRQueryParameters();

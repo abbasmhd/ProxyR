@@ -113,12 +113,17 @@ namespace ProxyR.Middleware.Helpers
                 // Do we need to use WHERE or WHERE NOT?
                 if (requestParams.Filter[0].ToString() == "!")
                 {
+                    if (requestParams.Filter.Count < 2 || requestParams.Filter[1] is not JArray negatedExpression)
+                    {
+                        throw new InvalidOperationException("A negated filter expression ('!') must be followed by a nested (...) expression.");
+                    }
+
                     statement.StartNewLine("WHERE NOT");
 
                     statement.Indent(clause =>
                     {
                         clause.StartNewLine();
-                        BuildWhereExpression(clause, (JArray)requestParams.Filter[1], paramBuilder, includeBrackets: false);
+                        BuildWhereExpression(clause, negatedExpression, paramBuilder, includeBrackets: false);
                     });
 
                 }
@@ -203,14 +208,14 @@ namespace ProxyR.Middleware.Helpers
             // Start the list of select-expressions.
             var selectExpressions = new List<string> { "[$Type] = 'Result'" };
 
-            if (parameters.Fields.Count > 0)
+            if (parameters.Fields != null && parameters.Fields.Count > 0)
             {
                 var dataFields = parameters.Fields.Select(selectField => $"RESULTS.[{Sql.Sanitize(selectField)}]");
                 selectExpressions.AddRange(dataFields);
             }
             else
             {
-                // No grouping... output everything?
+                // No fields given (e.g. $select=*), output everything.
                 selectExpressions.Add("RESULTS.*");
             }
 
