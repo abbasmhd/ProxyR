@@ -238,7 +238,7 @@ namespace ProxyR.Middleware.Helpers
             }
 
             var left = sourceExpression[0];
-            var firstOperation = sourceExpression[1]?.ToString().ToLower();
+            var firstOperation = sourceExpression[1]?.ToString().ToLowerInvariant();
 
             // Work out if we need to surround this expression in brackets.
             var needsBrackets = includeBrackets && (firstOperation == "and" || firstOperation == "or");
@@ -268,7 +268,7 @@ namespace ProxyR.Middleware.Helpers
             for (var sourcePartIndex = 1; sourcePartIndex < sourceExpression.Count; sourcePartIndex += 2)
             {
                 // Get the operation for this segment of the expression.
-                var operation = sourceExpression[sourcePartIndex]?.ToString().ToLower();
+                var operation = sourceExpression[sourcePartIndex]?.ToString().ToLowerInvariant();
 
                 // Get the right side.
                 var right = sourceExpression[sourcePartIndex + 1];

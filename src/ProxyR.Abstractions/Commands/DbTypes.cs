@@ -86,7 +86,7 @@ namespace ProxyR.Abstractions.Commands
         /// <returns>The DbType.</returns>
         public static DbType FromJsType(string jsType)
         {
-            return jsType.ToLower() switch
+            return jsType.ToLowerInvariant() switch
             {
                 "string" => _types.First(x => x.DbTypeName == "NVARCHAR"),
                 "number" => _types.First(x => x.DbTypeName == "DECIMAL"),
@@ -136,7 +136,7 @@ namespace ProxyR.Abstractions.Commands
         /// <returns>The DbObjectType enum value.</returns>
         public static DbObjectType ToDbObjectType(this string value)
         {
-            value = value?.Trim().ToUpper();
+            value = value?.Trim().ToUpperInvariant();
             return value switch
             {
                 "IF" => DbObjectType.InlineTableValuedFunction,
