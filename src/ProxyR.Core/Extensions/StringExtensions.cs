@@ -258,8 +258,8 @@ namespace ProxyR.Core.Extensions
                 .Where(s => !string.IsNullOrWhiteSpace(s))
                 .ToArray();
 
-            // Make the first word lower-case.
-            words[0] = words[0].ToLower();
+            // Make the first word lower-case (invariant — avoid Turkish-I defects).
+            words[0] = words[0].ToLowerInvariant();
 
             // Join to a new result.
             var result = String.Join(string.Empty, words);

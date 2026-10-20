@@ -469,7 +469,7 @@ namespace ProxyR.Abstractions.Extensions
                 }
 
                 JObject jRow;
-                if (typeName?.ToLower() == "$root")
+                if (typeName?.ToLowerInvariant() == "$root")
                 {
                     // We will be applying properties to the
                     // root object... the data-set object.
