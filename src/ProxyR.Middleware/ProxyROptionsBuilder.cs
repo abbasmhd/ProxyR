@@ -179,6 +179,11 @@ namespace ProxyR.Middleware
         /// </summary>
         public ProxyROptionsBuilder UseMaxTake(int maxTake)
         {
+            if (maxTake < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxTake), maxTake, "MaxTake must be at least 1.");
+            }
+
             Options.MaxTake = maxTake;
 
             return this;
