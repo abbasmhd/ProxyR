@@ -309,11 +309,22 @@ namespace ProxyR.Abstractions.Execution
                             hasDiscoveredColumnTypes = true;
                         }
 
-                        // Read the values into the row, and yield the row, without adding to the table.
-                        var row = table.NewRow();
-                        reader.GetValues(row.ItemArray);
+                    // Read the values into the row, and yield the row.
+                    // GetValues into row.ItemArray would write into a throwaway
+                    // copy of the values-array, and the row was never added to
+                    // the table — both meant empty rows were yielded (#64).
+                    var row = table.NewRow();
+                    var values = new object[reader.FieldCount];
+                    reader.GetValues(values);
 
-                        yield return row;
+                    for (var fieldIndex = 0; fieldIndex < values.Length; fieldIndex++)
+                    {
+                        row[fieldIndex] = values[fieldIndex];
+                    }
+
+                    table.Rows.Add(row);
+
+                    yield return row;
                     }
                 }
             }
