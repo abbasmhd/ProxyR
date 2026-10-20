@@ -1,5 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
+using ProxyR.Abstractions.Builder;
 using ProxyR.Core.Extensions;
 
 namespace ProxyR.Abstractions.Parameters
@@ -51,7 +52,10 @@ namespace ProxyR.Abstractions.Parameters
             }
             else if (ColumnName.HasContent())
             {
-                result += $"[{ColumnName}] ";
+                // Sanitize the column-name: it can originate from
+                // untrusted input ($orderby or the JSON request-body),
+                // so it must never be emitted as raw SQL.
+                result += $"[{Sql.Sanitize(ColumnName)}] ";
             }
 
             if (IsDescending)
