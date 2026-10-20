@@ -403,6 +403,30 @@ namespace ProxyR.Middleware.Helpers
         }
 
         /// <summary>
+        /// Applies the configured request limits (MaxTake, AllowLoadAll)
+        /// to the parsed query parameters.
+        /// </summary>
+        public static void ApplyRequestLimits(ProxyRQueryParameters queryParams, ProxyROptions options)
+        {
+            if (queryParams == null || options == null)
+            {
+                return;
+            }
+
+            // Clamp the page-size to the configured maximum.
+            if (options.MaxTake is int maxTake && queryParams.Take > maxTake)
+            {
+                queryParams.Take = maxTake;
+            }
+
+            // Ignore the load-all flag when it is not allowed.
+            if (!options.AllowLoadAll)
+            {
+                queryParams.LoadAll = false;
+            }
+        }
+
+        /// <summary>
         /// Parses the OData query string parameters and sets the corresponding values in the <see cref="ProxyRQueryParameters"/> object.
         /// </summary>
         public static void GetODataQueryStringParameters(IQueryCollection queryString, ProxyRQueryParameters queryParams)

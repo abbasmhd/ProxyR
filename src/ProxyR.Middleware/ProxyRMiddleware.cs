@@ -169,6 +169,9 @@ namespace ProxyR.Middleware
 
             // Override query-parameters from the query-String.
             StatementBuilder.GetODataQueryStringParameters(context.Request.Query, queryParams);
+            // Apply configured limits (MaxTake, AllowLoadAll).
+            StatementBuilder.ApplyRequestLimits(queryParams, _options.Value);
+
             // Log parameter names only (never values): query parameters and
             // overridden parameters can contain sensitive data (#60).
             _logger.LogDebug($"Query-Params: {string.Join(", ", queryParams.UserData.Keys)}; Filter: {queryParams.Filter != null}; Sort: {queryParams.Sort.Count}; Take: {queryParams.Take}; Skip: {queryParams.Skip}");
