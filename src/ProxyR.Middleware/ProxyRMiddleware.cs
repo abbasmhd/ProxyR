@@ -119,8 +119,51 @@ namespace ProxyR.Middleware
                 return;
             }
 
+            // Request BUILDING validates client-supplied input and maps
+            // validation failures to HTTP 400 (#65) — see ProcessRequestAsync.
+            // DB execution is deliberately NOT guarded here, so server
+            // faults during execution remain 500s.
+            await ProcessRequestAsync(context, requestBody, connectionString, functionSchema, functionName, objectType).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Determines whether an exception was raised by validating /
+        /// parsing client-supplied input (as opposed to a server fault).
+        /// </summary>
+        private static bool IsClientInputException(Exception ex)
+        {
+            return ex is Newtonsoft.Json.JsonException ||
+                   ex is InvalidOperationException ||
+                   ex is NotSupportedException ||
+                   ex is InvalidCastException ||
+                   ex is FormatException;
+        }
+
+        /// <summary>
+        /// Processes a request for an existing database function or view,
+        /// after the object has been confirmed to exist.
+        /// </summary>
+        private async Task ProcessRequestAsync(
+            HttpContext context,
+            string requestBody,
+            string connectionString,
+            string functionSchema,
+            string functionName,
+            string objectType)
+        {
+            ProxyRQueryParameters queryParams;
+            ParameterBuilder paramBuilder;
+            string sql;
+
+            // Request BUILDING works with client-supplied input: validation
+            // failures are mapped to HTTP 400 (#65), so bad filters / selects /
+            // bodies produce 400s instead of 500s. Only this build phase is
+            // guarded — the DB execution below stays outside the try, so
+            // server faults during execution remain 500s.
+            try
+            {
             // Get it into an interrogatable JSON object (JObject).
-            var queryParams = requestBody != null
+            queryParams = requestBody != null
               ? JsonConvert.DeserializeObject<ProxyRQueryParameters>(requestBody)
               : new ProxyRQueryParameters();
 
@@ -131,7 +174,7 @@ namespace ProxyR.Middleware
             _logger.LogDebug($"Query-Params: {string.Join(", ", queryParams.UserData.Keys)}; Filter: {queryParams.Filter != null}; Sort: {queryParams.Sort.Count}; Take: {queryParams.Take}; Skip: {queryParams.Skip}");
 
             // Get the parameters from the User-Data.
-            var paramBuilder = new ParameterBuilder();
+            paramBuilder = new ParameterBuilder();
             var paramValues = new Dictionary<string, object>(queryParams.UserData, StringComparer.InvariantCultureIgnoreCase);
 
             // Add the parameters from the query-string (that don't start with '$').
@@ -201,13 +244,23 @@ namespace ProxyR.Middleware
             StatementBuilder.BuildSqlUnit(sqlBuilder, paramBuilder, queryParams, functionSchema, functionName, functionArguments.ToArray(), isView);
 
             // Get the SQL generated.
-            var sql = sqlBuilder.ToString();
+            sql = sqlBuilder.ToString();
             // Log parameter names and types only (never values): parameters can
             // contain sensitive data, e.g. server-side overridden values (#60).
             _logger.LogDebug($"SQL Parameters: {string.Join(", ", paramBuilder.Parameters.Keys)}");
             _logger.LogDebug($"SQL Generated:\n{sql}");
+            }
+            catch (Exception ex) when (IsClientInputException(ex))
+            {
+                _logger.LogWarning(ex, "ProxyR rejected a request as invalid.");
+                context.Response.StatusCode = 400;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(JsonConvert.SerializeObject(new { error = ex.Message })).ConfigureAwait(false);
+                return;
+            }
 
-            // Run the SQL.
+            // Run the SQL — deliberately outside the input-validation guard,
+            // so exceptions raised by execution surface as 500s, not 400s.
             var results = await Db.Query(connectionString: connectionString, sql: sql, parameters: paramBuilder.Parameters.Values.ToArray())
                                   .ToJDataSetAsync()
                                   .ConfigureAwait(false);

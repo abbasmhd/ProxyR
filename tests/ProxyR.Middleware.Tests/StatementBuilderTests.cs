@@ -142,5 +142,30 @@ namespace ProxyR.Middleware.Tests
 
             sql.Should().Contain("1 DESC");
         }
+
+        [Fact]
+        public void BuildSqlUnit_WithNullFields_SelectsEverything()
+        {
+            // $select=* sets Fields to null — must not NRE (#65).
+            var parameters = new ProxyRQueryParameters();
+            parameters.Fields = null;
+
+            var sql = Build(parameters).ToString();
+
+            sql.Should().Contain("RESULTS.*");
+        }
+
+        [Fact]
+        public void BuildSqlUnit_WithMalformedNegatedFilter_ThrowsDescriptiveException()
+        {
+            // ["!", 5] — the second element is not a nested expression (#65).
+            var parameters = new ProxyRQueryParameters();
+            parameters.Filter = new Newtonsoft.Json.Linq.JArray("!", 5);
+
+            var act = () => Build(parameters);
+
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("*nested*expression*");
+        }
     }
 }
