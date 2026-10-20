@@ -402,7 +402,9 @@ namespace ProxyR.Abstractions.Builder
         public SqlBuilder AddColumn(string tableName, string columnName, string type, bool isNullable = false)
         {
             var columnDefinition = new ColumnDefinitionBuilder(columnName, type).IsNullable(isNullable);
-            Line($"ALTER TABLE {FormatTableName(tableName)} ADD [{Sql.Sanitize(columnName)}] {columnDefinition.Build()};");
+            // ColumnDefinitionBuilder.Build() already emits the sanitized
+            // column name — do not emit it twice (#74 review).
+            Line($"ALTER TABLE {FormatTableName(tableName)} ADD {columnDefinition.Build()};");
             return this;
         }
 
@@ -416,10 +418,14 @@ namespace ProxyR.Abstractions.Builder
         {
             foreach (var column in table.Columns.Cast<DataColumn>())
             {
+                // Check and create under the SANITIZED name, matching what
+                // AddColumn / ColumnDefinitionBuilder will emit (#74 review).
+                var sanitizedColumnName = Sql.Sanitize(column.ColumnName);
+
                 ColumnNotExists(
-                    column.ColumnName,
+                    sanitizedColumnName,
                     tableName,
-                    ifSegment => ifSegment.AddColumn(tableName, column.ColumnName, DbTypes.GetDbTypeSyntax(column.DataType), column.AllowDBNull));
+                    ifSegment => ifSegment.AddColumn(tableName, sanitizedColumnName, DbTypes.GetDbTypeSyntax(column.DataType), column.AllowDBNull));
             }
 
             return this;
