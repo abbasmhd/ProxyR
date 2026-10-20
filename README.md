@@ -22,13 +22,13 @@ Add the ProxyR middleware to your ASP.NET Core project:
 
 ```bash
 # Install latest pre-release version
-dotnet add package Abbasmhd.ProxyR --prerelease
+dotnet add package Abbasmhd.ProxyR.Middleware --prerelease
 
 # Or install specific version
-dotnet add package Abbasmhd.ProxyR --version 0.0.1-alpha
+dotnet add package Abbasmhd.ProxyR.Middleware --version 0.0.1-alpha
 ```
 
-Note: The package is published under the namespace `Abbasmhd.ProxyR` to follow NuGet naming conventions. This is currently a pre-release version (0.0.1-alpha) and the API may change without notice.
+Note: The package is published as `Abbasmhd.ProxyR.Middleware` to follow NuGet naming conventions. This is currently a pre-release version (0.0.1-alpha) and the API may change without notice.
 
 ### Basic Configuration
 
